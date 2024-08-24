@@ -34,3 +34,15 @@ void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_
 
     fclose(fp);
 }
+
+void print_binarios_pra_debug(const uint32_t *memoria, uint32_t tamanho) {
+    for (uint32_t i = 0; i < tamanho; i++) {
+        for (int j = 7; j >= 0; j--) {
+            printf("%d", (memoria[i] >> j) & 1);
+        }
+        printf(" ");
+        if ((i + 1) % 8 ==0) {
+            printf("\n");
+        }
+    }
+}
