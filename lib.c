@@ -36,13 +36,57 @@ void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_
 }
 
 void print_binarios_pra_debug(const uint32_t *memoria, uint32_t tamanho) {
+    printf("iniciando print da arquitetura de 16 bits");
     for (uint32_t i = 0; i < tamanho; i++) {
-        for (int j = 7; j >= 0; j--) {
-            printf("%d", (memoria[i] >> j) & 1);
+        int cont1 = 0;
+        uint16_t instrucao = memoria[i];
+
+        for (int j = 16; j >= 0; j--) {
+            if ((instrucao & (1 << j)) == 1) {
+                cont1++;
+            }
         }
-        printf(" ");
-        if ((i + 1) % 8 ==0) {
-            printf("\n");
+        if (cont1 == 0) {
+            continue; //ignorando instruções só com 0s
         }
+
+        printf("instrução: %d", i);
+        printf("\n");
+
+        printf("  Completo: ");
+        for (int j = 15; j >= 0; j--) {
+            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        }
+        printf("\n");
+
+        printf("  Formato: ");
+        for (int j = 15; j >= 15; j--) {
+            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        }
+        printf("\n");
+
+        printf("  Opcode: ");
+        for (int j = 14; j >= 9; j--) {
+            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        }
+        printf("\n");
+
+        printf("  Destino:  ");
+        for (int j = 8; j >= 6; j--) {
+            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        }
+        printf("\n");
+
+        printf("  Operando 1:   ");
+        for (int j = 5; j >= 3; j--) {
+            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        }
+        printf("\n");
+
+        printf("  Operando 2:   ");
+        for (int j = 2; j >= 0; j--) {
+            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        }
+        printf("\n\n");
     }
 }
