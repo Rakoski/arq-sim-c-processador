@@ -36,9 +36,9 @@ void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_
 }
 
 int decimal_pra_binario(int binario1, int binario2, int binario3) {
-    int decimal1 = binario1 * (2 * 2); // 2^4
-    int decimal2 = binario2 * (2 * 1); // 2^2
-    int decimal3 = binario3 * (1); // 2^1
+    int decimal1 = binario1 * (2 * 2); // 2^2
+    int decimal2 = binario2 * (2 * 1); // 2^1
+    int decimal3 = binario3 * (1); // 2^0
     return decimal1 + decimal2 + decimal3;
 }
 
