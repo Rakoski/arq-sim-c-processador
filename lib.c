@@ -42,6 +42,123 @@ int decimal_pra_binario(int binario1, int binario2, int binario3) {
     return decimal1 + decimal2 + decimal3;
 }
 
+void printa_tipo_r(uint16_t instrucao) {
+    printf("  Opcode: ");
+    for (int j = 14; j >= 9; j--) {
+        printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+    }
+    printf("\n");
+
+    printf("  Destino:  ");
+    int binariodest1 = 0;
+    int binariodest2 = 0;
+    int binariodest3 = 0;
+    for (int j = 8; j >= 6; j--) {
+        if (j == 8) {
+            binariodest1 = (instrucao & (1 << j)) ? 1 : 0;
+        } else if (j == 7) {
+            binariodest2 = (instrucao & (1 << j)) ? 1 : 0;
+        } else {
+            binariodest3 = (instrucao & (1 << j)) ? 1 : 0;
+        }
+    }
+    printf("r%d", decimal_pra_binario(binariodest1, binariodest2, binariodest3));
+    printf("\n");
+
+    printf("  Operando 1:   ");
+    int binarioop11 = 0;
+    int binarioop12 = 0;
+    int binarioop13 = 0;
+    for (int j = 5; j >= 3; j--) {
+        if (j == 5) {
+            binarioop11 = (instrucao & (1 << j)) ? 1 : 0;
+        } else if (j == 4) {
+            binarioop12 = (instrucao & (1 << j)) ? 1 : 0;
+        } else {
+            binarioop13 = (instrucao & (1 << j)) ? 1 : 0;
+        }
+    }
+    printf("r%d", decimal_pra_binario(binarioop11, binarioop12, binarioop13));
+    printf("\n");
+
+    int binarioop21 = 0;
+    int binarioop22 = 0;
+    int binarioop23 = 0;
+    printf("  Operando 2:   ");
+    for (int j = 2; j >= 0; j--) {
+        if (j == 2) {
+            binarioop21 = (instrucao & (1 << j)) ? 1 : 0;
+        } else if (j == 1) {
+            binarioop22 = (instrucao & (1 << j)) ? 1 : 0;
+        } else {
+            binarioop23 = (instrucao & (1 << j)) ? 1 : 0;
+        }
+    }
+    printf("r%d", decimal_pra_binario(binarioop21, binarioop22, binarioop23));
+    printf("\n");
+
+    printf("  Completo: ");
+    for (int j = 15; j >= 0; j--) {
+        printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        if (j == 15 || j == 9 || j == 6 || j == 3) {
+            printf(" ");
+        }
+    }
+    printf("\n\n");
+}
+
+void printa_tipo_i(uint16_t instrucao) {
+    printf("  Opcode: ");
+    for (int j = 15; j >= 14; j--) {
+        printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+    }
+    printf("\n");
+
+    printf("  Registrador:  ");
+    int binariodest1 = 0;
+    int binariodest2 = 0;
+    int binariodest3 = 0;
+    for (int j = 13; j >= 11; j--) {
+        if (j == 13) {
+            binariodest1 = (instrucao & (1 << j)) ? 1 : 0;
+        } else if (j == 12) {
+            binariodest2 = (instrucao & (1 << j)) ? 1 : 0;
+        } else {
+            binariodest3 = (instrucao & (1 << j)) ? 1 : 0;
+        }
+    }
+    printf("r%d", decimal_pra_binario(binariodest1, binariodest2, binariodest3));
+    printf("\n");
+
+    printf("  Imediato:   ");
+
+    // int binarioimediato1 = 0;
+    // int binarioimediato2 = 0;
+    // int binarioimediato3 = 0;
+    for (int j = 9; j >= 0; j--) {
+        printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        //     if (j == 9) {
+        //         binarioimediato1 = (instrucao & (1 << j)) ? 1 : 0;
+        //     } else if (j == 8) {
+        //         binarioimediato1 = (instrucao & (1 << j)) ? 1 : 0;
+        //     } else {
+        //         binarioimediato1 = (instrucao & (1 << j)) ? 1 : 0;
+        //     }
+    }
+    // printf("r%d", decimal_pra_binario(binarioimediato1, binarioimediato2, binarioimediato3));
+    printf("\n");
+
+    printf("  Completo: ");
+    for (int j = 15; j >= 0; j--) {
+        printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        if (j == 15 || j == 13 || j == 10) {
+            printf(" ");
+        }
+    }
+    printf("\n\n");
+
+}
+
 void print_binarios_pra_debug(const uint32_t *memoria, uint32_t tamanho) {
     printf("iniciando print da arquitetura de 16 bits");
     for (uint32_t i = 0; i < tamanho; i++) {
@@ -58,76 +175,26 @@ void print_binarios_pra_debug(const uint32_t *memoria, uint32_t tamanho) {
             continue; //ignorando instruções só com 0s
         }
 
+        printf("\n");
         printf("instrução: %d", i);
         printf("\n");
 
         printf("  Formato: ");
+        char* tipo;
         for (int j = 15; j >= 15; j--) {
-            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
-        }
-        printf("\n");
-
-        printf("  Opcode: ");
-        for (int j = 14; j >= 9; j--) {
-            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
-        }
-        printf("\n");
-
-        printf("  Destino:  ");
-        int binariodest1 = 0;
-        int binariodest2 = 0;
-        int binariodest3 = 0;
-        for (int j = 8; j >= 6; j--) {
-            if (j == 8) {
-                binariodest1 = (instrucao & (1 << j)) ? 1 : 0;
-            } else if (j == 7) {
-                binariodest2 = (instrucao & (1 << j)) ? 1 : 0;
+            if ((instrucao & (1 << j)) == 0) {
+                tipo = "R"; // ULA (matemática)
             } else {
-                binariodest3 = (instrucao & (1 << j)) ? 1 : 0;
+                tipo = "I"; // jump e move imediate
             }
         }
-        printf("r%d", decimal_pra_binario(binariodest1, binariodest2, binariodest3));
+        printf(tipo);
         printf("\n");
 
-        printf("  Operando 1:   ");
-        int binarioop11 = 0;
-        int binarioop12 = 0;
-        int binarioop13 = 0;
-        for (int j = 5; j >= 3; j--) {
-            if (j == 5) {
-                binarioop11 = (instrucao & (1 << j)) ? 1 : 0;
-            } else if (j == 4) {
-                binarioop12 = (instrucao & (1 << j)) ? 1 : 0;
-            } else {
-                binarioop13 = (instrucao & (1 << j)) ? 1 : 0;
-            }
+        if (tipo == "R") {
+            printa_tipo_r(instrucao);
+        } else {
+            printa_tipo_i(instrucao);
         }
-        printf("r%d", decimal_pra_binario(binarioop11, binarioop12, binarioop13));
-        printf("\n");
-
-        int binarioop21 = 0;
-        int binarioop22 = 0;
-        int binarioop23 = 0;
-        printf("  Operando 2:   ");
-        for (int j = 2; j >= 0; j--) {
-            if (j == 2) {
-                binarioop21 = (instrucao & (1 << j)) ? 1 : 0;
-            } else if (j == 1) {
-                binarioop22 = (instrucao & (1 << j)) ? 1 : 0;
-            } else {
-                binarioop23 = (instrucao & (1 << j)) ? 1 : 0;
-            }
-        }
-        printf("r%d", decimal_pra_binario(binarioop21, binarioop22, binarioop23));
-        printf("\n");
-
-        printf("  Completo: ");
-        for (int j = 15; j >= 0; j--) {
-            printf("%d", (instrucao & (1 << j)) ? 1 : 0);
-            if (j == 15 || j == 9 || j == 6 || j == 3) {
-                printf(" ");
-            }
-        }
-        printf("\n\n");
     }
 }
