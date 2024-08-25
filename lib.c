@@ -56,6 +56,9 @@ void print_binarios_pra_debug(const uint32_t *memoria, uint32_t tamanho) {
         printf("  Completo: ");
         for (int j = 15; j >= 0; j--) {
             printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+            if (j == 15 || j == 9 || j == 6 || j == 3) {
+                printf(" ");
+            }
         }
         printf("\n");
 
