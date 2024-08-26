@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "lib.h"
+#include <math.h>
 
 void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_size)
 {
@@ -42,11 +42,24 @@ int decimal_pra_binario(int binario1, int binario2, int binario3) {
     return decimal1 + decimal2 + decimal3;
 }
 
+int decimal_pra_binario_grande(int binarios[], int tamanho_do_vetor) {
+    int decimal = 0;
+    for (int i = 0; i < tamanho_do_vetor; i++) {
+        decimal += binarios[i] * (1 << (tamanho_do_vetor - 1 - i));
+    }
+    return decimal;
+}
+
 void printa_tipo_r(uint16_t instrucao) {
     printf("  Opcode: ");
+    int array_pra_converter[6];
     for (int j = 14; j >= 9; j--) {
-        printf("%d", (instrucao & (1 << j)) ? 1 : 0);
+        int bit = (instrucao & (1 << j)) ? 1 : 0;
+        array_pra_converter[14 - j] = bit;
     }
+
+    int decimal_opcode = decimal_pra_binario_grande(array_pra_converter, 6);
+    printf("%d", decimal_opcode);
     printf("\n");
 
     printf("  Destino:  ");
@@ -132,20 +145,12 @@ void printa_tipo_i(uint16_t instrucao) {
 
     printf("  Imediato:   ");
 
-    // int binarioimediato1 = 0;
-    // int binarioimediato2 = 0;
-    // int binarioimediato3 = 0;
+    int array_pra_converter[10];
     for (int j = 9; j >= 0; j--) {
-        printf("%d", (instrucao & (1 << j)) ? 1 : 0);
-        //     if (j == 9) {
-        //         binarioimediato1 = (instrucao & (1 << j)) ? 1 : 0;
-        //     } else if (j == 8) {
-        //         binarioimediato1 = (instrucao & (1 << j)) ? 1 : 0;
-        //     } else {
-        //         binarioimediato1 = (instrucao & (1 << j)) ? 1 : 0;
-        //     }
+        int bit = instrucao & (1 << j);
+        array_pra_converter[j] = bit;
     }
-    // printf("r%d", decimal_pra_binario(binarioimediato1, binarioimediato2, binarioimediato3));
+    printf("%d", decimal_pra_binario_grande(array_pra_converter, 10));
     printf("\n");
 
     printf("  Completo: ");

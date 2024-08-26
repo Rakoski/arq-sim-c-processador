@@ -2,6 +2,7 @@
 #define __HEADER_LIB_H__
 
 #include <stdint.h>
+#include <math.h>
 
 void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_size);
 void print_binarios_pra_debug(const uint32_t *memory, uint32_t mem_size);
