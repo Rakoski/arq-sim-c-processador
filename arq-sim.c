@@ -35,7 +35,6 @@ int main (int argc, char **argv /* vulgo arquivo q vai ser compilado */)
         exit(1);
     }
 
-    printf(argv[1]);
     load_binary_to_memory(argv[1], memoria, tamanho_da_memoria);
 
     print_binarios_pra_debug(memoria, tamanho_da_memoria);

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "lib.h"
 #include <math.h>
+#define OPCODES_H
 
 void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_size)
 {
@@ -193,7 +194,7 @@ void print_binarios_pra_debug(const uint32_t *memoria, uint32_t tamanho) {
                 tipo = "I"; // jump e move imediate
             }
         }
-        printf(tipo);
+        printf("%s", tipo);
         printf("\n");
 
         if (tipo == "R") {

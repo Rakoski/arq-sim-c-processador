@@ -1,3 +1,5 @@
+
+#ifndef OPCODES_H
 typedef enum {
 // r
     add = 0,
