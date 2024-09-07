@@ -6,13 +6,14 @@
 
 typedef struct {
     uint16_t pc;
-    uint16_t registers[8];
+    uint16_t quant_registradores[8];
 } aondeOProcessadorEstaAgora;
 
-void print_pc(const aondeOProcessadorEstaAgora *onde_pc_ta) {
-    printf("PC: 0x%04X\n", onde_pc_ta->pc);
+// acessa e pega o que ta naquele endereço de memória (do ponteiro do struct aondeOProcessadorEstaAgora que o pc e o  ta)
+void print_pc(const aondeOProcessadorEstaAgora *ondeEleTa) {
+    printf("PC: 0x%04X\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
-        printf("%s: 0x%04X ", get_reg_name_str(i), onde_pc_ta->registers[i]);
+        printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->quant_registradores[i]);
         if (i % 4 == 3) printf("\n");
     }
     printf("\n");
@@ -107,19 +108,19 @@ void decodifica(uint16_t instrucao) {
     printf("formato: %c\n", tipo);
 
     if (tipo == 'R') {
-        uint16_t const opcode = extract_bits(instrucao, 9, 6);
-        uint16_t const dest = extract_bits(instrucao, 6, 3);
-        uint16_t const op1 = extract_bits(instrucao, 3, 3);
-        uint16_t const op2 = extract_bits(instrucao, 0, 3);
+        const uint16_t opcode = extract_bits(instrucao, 9, 6);
+        const uint16_t dest = extract_bits(instrucao, 6, 3);
+        const uint16_t op1 = extract_bits(instrucao, 3, 3);
+        const uint16_t op2 = extract_bits(instrucao, 0, 3);
 
         printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
         printf("reg dest: r%d\n", dest);
         printf("reg 1: r%d\n", op1);
         printf("reg 2: r%d\n", op2);
     } else {
-        uint16_t const opcode = extract_bits(instrucao, 13, 2);
-        uint16_t const reg = extract_bits(instrucao, 10, 3);
-        uint16_t const immediate = extract_bits(instrucao, 0, 10);
+        const uint16_t opcode = extract_bits(instrucao, 13, 2);
+        const uint16_t reg = extract_bits(instrucao, 10, 3);
+        const uint16_t immediate = extract_bits(instrucao, 0, 10);
 
         printf("opdoce: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
         printf("reg 1: r%d\n", reg);
@@ -128,11 +129,41 @@ void decodifica(uint16_t instrucao) {
 }
 
 void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint32_t memoria) {
+    char bit_formato = extract_bits(instrucao, 15, 1);
+    char tipo = bit_formato ? 'I' : 'R';
 
+    if (tipo == 'R') {
+        const uint16_t opcode = extract_bits(instrucao, 9, 6);
+        const uint16_t dest = extract_bits(instrucao, 6, 3);
+        const uint16_t op1 = extract_bits(instrucao, 3, 3);
+        const uint16_t op2 = extract_bits(instrucao, 0, 3);
+
+        switch(opcode) {
+            case add:
+                estado_pc->quant_registradores[dest] = estado_pc->quant_registradores[op1] + estado_pc->quant_registradores[op2];
+                break;
+            case sub:
+                estado_pc->quant_registradores[dest] = estado_pc->quant_registradores[op1] - estado_pc->quant_registradores[op2];
+                break;
+            default:
+                break;
+        }
+    } else {
+        const uint16_t opcode = extract_bits(instrucao, 13, 2);
+        const uint16_t reg = extract_bits(instrucao, 10, 3);
+        const uint16_t immediate = extract_bits(instrucao, 0, 10);
+
+        switch(opcode) {
+            case mov:
+                estado_pc->quant_registradores[reg] = immediate;
+                break;
+            default:
+                break;
+        }
+    }
 }
 
-int main(const int argc, char **argv)
-{
+int main(const int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s [bin_name]\n", argv[0]);
         exit(1);
