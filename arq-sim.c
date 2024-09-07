@@ -139,17 +139,17 @@ int main(const int argc, char **argv)
     }
 
     const uint32_t tamanho_da_memoria = 0x0000FFF;
-    uint16_t *memory = calloc(tamanho_da_memoria, sizeof(uint16_t));
-    if (!memory) {
-        printf("Memory allocation failed\n");
+    uint16_t *memoria = calloc(tamanho_da_memoria, sizeof(uint16_t));
+    if (!memoria) {
+        printf("memoria allocation failed\n");
         exit(1);
     }
 
-    load_binary_to_memory(argv[1], memory, tamanho_da_memoria);
+    load_binary_to_memory(argv[1], memoria, tamanho_da_memoria);
 
     //for(int i = 0; i < tamanho_da_memoria; i++) {
-        //printf("memory[%d] = ", i);
-        //printzaoDebug(memory[i]);
+        //printf("memoria[%d] = ", i);
+        //printzaoDebug(memoria[i]);
     //}
 
     // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40
@@ -158,13 +158,13 @@ int main(const int argc, char **argv)
 
     while (1) {
         // busca da instrução é feita quando eu aperto o enter
-        const uint16_t instrucao = fetch_instrucao(memory, onde_pc_ta.pc);
+        const uint16_t instrucao = fetch_instrucao(memoria, onde_pc_ta.pc);
 
         print_pc(&onde_pc_ta);
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
-        executa(&onde_pc_ta, instrucao, memory);
+        executa(&onde_pc_ta, instrucao, memoria);
 
         onde_pc_ta.pc++;
 
@@ -176,6 +176,6 @@ int main(const int argc, char **argv)
         getchar();
     }
 
-    free(memory);
+    free(memoria);
     return 0;
 }
