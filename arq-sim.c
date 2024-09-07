@@ -70,7 +70,7 @@ int binario_pra_decimal(const int binarios[], int tamanho_do_vetor) {
 }
 
 void printzaoDebug(uint16_t instrucao) {
-    printf("Instrução: ");
+    printf("instrução: ");
     for (int j = 15; j >= 0; j--) {
         printf("%d", (instrucao & (1 << j)) ? 1 : 0);
         if (j == 15 || j == 9 || j == 6 || j == 3) {
@@ -80,7 +80,7 @@ void printzaoDebug(uint16_t instrucao) {
     printf("\n");
 
     char tipo = (instrucao & (1 << 15)) ? 'I' : 'R';
-    printf("Formato: %c\n", tipo);
+    printf("formato: %c\n", tipo);
 
     if (tipo == 'R') {
         int opcode_bits[6];
@@ -88,44 +88,44 @@ void printzaoDebug(uint16_t instrucao) {
             opcode_bits[14 - j] = (instrucao & (1 << j)) ? 1 : 0;
         }
         int opcode = binario_pra_decimal(opcode_bits, 6);
-        printf("Opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
+        printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
 
         int dest_bits[3];
         for (int j = 8; j >= 6; j--) {
             dest_bits[8 - j] = (instrucao & (1 << j)) ? 1 : 0;
         }
-        printf("Destino: r%d\n", binario_pra_decimal(dest_bits, 3));
+        printf("reg dest: r%d\n", binario_pra_decimal(dest_bits, 3));
 
         int op1_bits[3];
         for (int j = 5; j >= 3; j--) {
             op1_bits[5 - j] = (instrucao & (1 << j)) ? 1 : 0;
         }
-        printf("Operando 1: r%d\n", binario_pra_decimal(op1_bits, 3));
+        printf("reg 1: r%d\n", binario_pra_decimal(op1_bits, 3));
 
         int op2_bits[3];
         for (int j = 2; j >= 0; j--) {
             op2_bits[2 - j] = (instrucao & (1 << j)) ? 1 : 0;
         }
-        printf("Operando 2: r%d\n", binario_pra_decimal(op2_bits, 3));
+        printf("reg 2: r%d\n", binario_pra_decimal(op2_bits, 3));
     } else {
         int opcode_bits[2];
         for (int j = 14; j >= 13; j--) {
             opcode_bits[14 - j] = (instrucao & (1 << j)) ? 1 : 0;
         }
         int opcode = binario_pra_decimal(opcode_bits, 2);
-        printf("Opcode: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
+        printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
 
         int reg_bits[3];
         for (int j = 12; j >= 10; j--) {
             reg_bits[12 - j] = (instrucao & (1 << j)) ? 1 : 0;
         }
-        printf("Registrador: r%d\n", binario_pra_decimal(reg_bits, 3));
+        printf("reg dest: r%d\n", binario_pra_decimal(reg_bits, 3));
 
         int imm_bits[10];
         for (int j = 9; j >= 0; j--) {
             imm_bits[9 - j] = (instrucao & (1 << j)) ? 1 : 0;
         }
-        printf("Imediato: %d\n", binario_pra_decimal(imm_bits, 10));
+        printf("imediato: %d\n", binario_pra_decimal(imm_bits, 10));
     }
 
     printf("\n");
@@ -141,18 +141,18 @@ void decodifica(uint16_t instrucao) {
         uint16_t op1 = extract_bits(instrucao, 3, 3);
         uint16_t op2 = extract_bits(instrucao, 0, 3);
 
-        printf("Opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
-        printf("Destination: r%d\n", dest);
-        printf("Operand 1: r%d\n", op1);
-        printf("Operand 2: r%d\n", op2);
+        printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
+        printf("reg dest: r%d\n", dest);
+        printf("reg 1: r%d\n", op1);
+        printf("reg 2: r%d\n", op2);
     } else {
         uint16_t opcode = extract_bits(instrucao, 13, 2);
         uint16_t reg = extract_bits(instrucao, 10, 3);
         uint16_t immediate = extract_bits(instrucao, 0, 10);
 
-        printf("Opcode: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
-        printf("Register: r%d\n", reg);
-        printf("Immediate: %d\n", immediate);
+        printf("opdoce: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
+        printf("reg 1: r%d\n", reg);
+        printf("imediato: %d\n", immediate);
     }
 }
 
