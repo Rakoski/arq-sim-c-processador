@@ -128,7 +128,7 @@ void decodifica(uint16_t instrucao) {
 }
 
 void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint32_t memoria) {
-    char type = extract_bits(instrucao, 15, 1);
+
 }
 
 int main(const int argc, char **argv)
@@ -152,7 +152,8 @@ int main(const int argc, char **argv)
         //printzaoDebug(memory[i]);
     //}
 
-    // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40)
+    // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40
+    // na primeira instrução 0x0001)
     aondeOProcessadorEstaAgora onde_pc_ta = {0};
 
     while (1) {
@@ -163,6 +164,7 @@ int main(const int argc, char **argv)
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
+        executa(&onde_pc_ta, instrucao, memory);
 
         onde_pc_ta.pc++;
 
