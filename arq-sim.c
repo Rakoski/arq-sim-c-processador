@@ -158,13 +158,13 @@ int main(const int argc, char **argv)
 
     while (1) {
         // busca da instrução é feita quando eu aperto o enter
-        const uint16_t instrucao = fetch_instrucao(memoria, onde_pc_ta.pc);
+        const uint16_t instrucao = memoria[onde_pc_ta.pc];
 
         print_pc(&onde_pc_ta);
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
-        executa(&onde_pc_ta, instrucao, memoria);
+        executa(&onde_pc_ta, instrucao, *memoria);
 
         onde_pc_ta.pc++;
 

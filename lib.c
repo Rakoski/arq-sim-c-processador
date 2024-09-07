@@ -57,7 +57,3 @@ int binario_pra_decimal(const int binarios[], const int tamanho_do_vetor) {
     }
     return decimal;
 }
-
-uint16_t fetch_instrucao(uint16_t *memory, const uint16_t pc) {
-    return memory[pc];
-}
