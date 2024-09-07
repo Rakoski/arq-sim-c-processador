@@ -50,7 +50,7 @@ char *get_reg_name_str(int i) {
     return "registrador inválido";
 }
 
-int binario_pra_decimal(const int binarios[], int tamanho_do_vetor) {
+int binario_pra_decimal(const int binarios[], const int tamanho_do_vetor) {
     int decimal = 0;
     for (int i = 0; i < tamanho_do_vetor; i++) {
         decimal += binarios[i] * (1 << (tamanho_do_vetor - 1 - i));
@@ -58,6 +58,6 @@ int binario_pra_decimal(const int binarios[], int tamanho_do_vetor) {
     return decimal;
 }
 
-uint16_t fetch_instrucao(uint16_t *memory, uint16_t pc) {
+uint16_t fetch_instrucao(const uint16_t *memory, const uint16_t pc) {
     return memory[pc];
 }

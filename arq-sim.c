@@ -9,7 +9,7 @@ typedef struct {
     uint16_t registers[8];
 } aondeOProcessadorEstaAgora;
 
-void print_pc(aondeOProcessadorEstaAgora const *ondeEleTa) {
+void print_pc(const aondeOProcessadorEstaAgora *ondeEleTa) {
     printf("PC: 0x%04X\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
         printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->registers[i]);
@@ -39,7 +39,7 @@ const char* nomes_do_opcode_i[] = {
         [jump] = "jump", [jump_cond] = "jump_cond", [mov] = "mov"
 };
 
-void printzaoDebug(uint16_t instrucao) {
+void printzaoDebug(const uint16_t instrucao) {
     printf("instrução: ");
     for (int j = 15; j >= 0; j--) {
         printf("%d", (instrucao & (1 << j)) ? 1 : 0);
@@ -106,19 +106,19 @@ void decodifica(uint16_t instrucao) {
     printf("tipo da instrução: %c\n", tipo);
 
     if (tipo == 'R') {
-        uint16_t opcode = extract_bits(instrucao, 9, 6);
-        uint16_t dest = extract_bits(instrucao, 6, 3);
-        uint16_t op1 = extract_bits(instrucao, 3, 3);
-        uint16_t op2 = extract_bits(instrucao, 0, 3);
+        uint16_t const opcode = extract_bits(instrucao, 9, 6);
+        uint16_t const dest = extract_bits(instrucao, 6, 3);
+        uint16_t const op1 = extract_bits(instrucao, 3, 3);
+        uint16_t const op2 = extract_bits(instrucao, 0, 3);
 
         printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
         printf("reg dest: r%d\n", dest);
         printf("reg 1: r%d\n", op1);
         printf("reg 2: r%d\n", op2);
     } else {
-        uint16_t opcode = extract_bits(instrucao, 13, 2);
-        uint16_t reg = extract_bits(instrucao, 10, 3);
-        uint16_t immediate = extract_bits(instrucao, 0, 10);
+        uint16_t const opcode = extract_bits(instrucao, 13, 2);
+        uint16_t const reg = extract_bits(instrucao, 10, 3);
+        uint16_t const immediate = extract_bits(instrucao, 0, 10);
 
         printf("opdoce: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
         printf("reg 1: r%d\n", reg);
@@ -126,7 +126,7 @@ void decodifica(uint16_t instrucao) {
     }
 }
 
-int main(int argc, char **argv)
+int main(const int argc, char **argv)
 {
     if (argc != 2) {
         printf("usage: %s [bin_name]\n", argv[0]);
@@ -147,13 +147,13 @@ int main(int argc, char **argv)
         printzaoDebug(memory[i]);
     }
 
-    // começa no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade
-    aondeOProcessadorEstaAgora ondeEleTa = {40};
+    // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40)
+    aondeOProcessadorEstaAgora ondeEleTa = {0};
 
     while (1) {
-        uint16_t instrucao = fetch_instrucao(memory, ondeEleTa.pc);
+        const uint16_t instrucao = fetch_instrucao(memory, ondeEleTa.pc);
 
-        print_pc(&ondeEleTa);
+        //print_pc(&ondeEleTa);
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
