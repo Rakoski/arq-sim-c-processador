@@ -9,7 +9,39 @@
 #include <stdio.h>
 #include <stdint.h>
 
-// Opcode enums and name arrays (copied from lib.c)
+typedef struct {
+    uint16_t pc;
+    uint16_t registers[8];
+} aondeOProcessadorEstaAgora;
+
+uint16_t fetch_instrucao(uint16_t *memory, uint16_t pc) {
+    return memory[pc];
+}
+
+char *get_reg_name_str(int i);
+
+void print_processor_state(aondeOProcessadorEstaAgora *ondeEleTa) {
+    printf("PC: 0x%04X\n", ondeEleTa->pc);
+    for (int i = 0; i < 8; i++) {
+        printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->registers[i]);
+        if (i % 4 == 3) printf("\n");
+    }
+    printf("\n");
+}
+
+char *get_reg_name_str(int i) {
+    static char *reg_names[] = {
+            "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"
+    };
+
+    if (i >= 0 && i < 8) {
+        return reg_names[i];
+    } else {
+        return "invalid_reg";
+    }
+}
+
+// nao da pra colocar div como chave em algum enum por causa do tipo div_t em c, assim opto por colocar div2
 typedef enum {
     add = 0, sub = 1, mul = 2, div2 = 3, cmp_equal = 4, cmp_neq = 5,
     load = 15, store = 16, syscall = 63
@@ -37,7 +69,7 @@ int binario_pra_decimal(const int binarios[], int tamanho_do_vetor) {
     return decimal;
 }
 
-void print_binary(uint16_t instrucao) {
+void printzaoDebug(uint16_t instrucao) {
     printf("Instrução: ");
     for (int j = 15; j >= 0; j--) {
         printf("%d", (instrucao & (1 << j)) ? 1 : 0);
@@ -99,20 +131,29 @@ void print_binary(uint16_t instrucao) {
     printf("\n");
 }
 
-const char* get_reg_name_str (uint16_t reg)
-{
-    static const char *str[] = {
-        "r0",
-        "r1",
-        "r2",
-        "r3",
-        "r4",
-        "r5",
-        "r6",
-        "r7"
-    };
+void decodifica(uint16_t instrucao) {
+    char tipo = (instrucao & (1 << 15)) ? 'I' : 'R';
+    printf("tipo da instrução: %c\n", tipo);
 
-    return str[reg];
+    if (tipo == 'R') {
+        uint16_t opcode = extract_bits(instrucao, 9, 6);
+        uint16_t dest = extract_bits(instrucao, 6, 3);
+        uint16_t op1 = extract_bits(instrucao, 3, 3);
+        uint16_t op2 = extract_bits(instrucao, 0, 3);
+
+        printf("Opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
+        printf("Destination: r%d\n", dest);
+        printf("Operand 1: r%d\n", op1);
+        printf("Operand 2: r%d\n", op2);
+    } else {
+        uint16_t opcode = extract_bits(instrucao, 13, 2);
+        uint16_t reg = extract_bits(instrucao, 10, 3);
+        uint16_t immediate = extract_bits(instrucao, 0, 10);
+
+        printf("Opcode: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
+        printf("Register: r%d\n", reg);
+        printf("Immediate: %d\n", immediate);
+    }
 }
 
 int main(int argc, char **argv)
@@ -133,13 +174,30 @@ int main(int argc, char **argv)
 
     for(int i = 0; i < tamanho_da_memoria; i++) {
         printf("memory[%d] = ", i);
-        print_binary(memory[i]);
+        printzaoDebug(memory[i]);
     }
 
+    // começa no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade
+    aondeOProcessadorEstaAgora ondeEleTa = {40};
 
+    while (1) {
+        uint16_t instrucao = fetch_instrucao(memory, ondeEleTa.pc);
 
-    // print_binarios_pra_debug(memory, tamanho_da_memoria);
+        print_processor_state(&ondeEleTa);
+       // printzaoDebug(instrucao);
 
-    free(memory);  // Don't forget to free the allocated memory
+        decodifica(instrucao);
+
+        ondeEleTa.pc++;
+
+        // perto de onde o programa começa a colocar só instruções com 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 (eu acho)
+        if (instrucao == 0x1111) {
+            break;
+        }
+
+        getchar();
+    }
+
+    free(memory);
     return 0;
 }
