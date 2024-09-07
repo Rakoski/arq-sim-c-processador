@@ -9,10 +9,10 @@ typedef struct {
     uint16_t registers[8];
 } aondeOProcessadorEstaAgora;
 
-void print_pc(const aondeOProcessadorEstaAgora *ondeEleTa) {
-    printf("PC: 0x%04X\n", ondeEleTa->pc);
+void print_pc(const aondeOProcessadorEstaAgora *onde_pc_ta) {
+    printf("PC: 0x%04X\n", onde_pc_ta->pc);
     for (int i = 0; i < 8; i++) {
-        printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->registers[i]);
+        printf("%s: 0x%04X ", get_reg_name_str(i), onde_pc_ta->registers[i]);
         if (i % 4 == 3) printf("\n");
     }
     printf("\n");
@@ -102,8 +102,9 @@ void printzaoDebug(const uint16_t instrucao) {
 }
 
 void decodifica(uint16_t instrucao) {
-    char tipo = (instrucao & (1 << 15)) ? 'I' : 'R';
-    printf("tipo da instrução: %c\n", tipo);
+    char bit_formato = extract_bits(instrucao, 15, 1);
+    char tipo = bit_formato ? 'I' : 'R';
+    printf("formato: %c\n", tipo);
 
     if (tipo == 'R') {
         uint16_t const opcode = extract_bits(instrucao, 9, 6);
@@ -126,6 +127,10 @@ void decodifica(uint16_t instrucao) {
     }
 }
 
+void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint32_t memoria) {
+    char type = extract_bits(instrucao, 15, 1);
+}
+
 int main(const int argc, char **argv)
 {
     if (argc != 2) {
@@ -142,26 +147,27 @@ int main(const int argc, char **argv)
 
     load_binary_to_memory(argv[1], memory, tamanho_da_memoria);
 
-    for(int i = 0; i < tamanho_da_memoria; i++) {
-        printf("memory[%d] = ", i);
+    //for(int i = 0; i < tamanho_da_memoria; i++) {
+        //printf("memory[%d] = ", i);
         //printzaoDebug(memory[i]);
-    }
+    //}
 
     // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40)
-    aondeOProcessadorEstaAgora ondeEleTa = {0};
+    aondeOProcessadorEstaAgora onde_pc_ta = {0};
 
     while (1) {
-        const uint16_t instrucao = fetch_instrucao(memory, ondeEleTa.pc);
+        // busca da instrução é feita quando eu aperto o enter
+        const uint16_t instrucao = fetch_instrucao(memory, onde_pc_ta.pc);
 
-        print_pc(&ondeEleTa);
+        print_pc(&onde_pc_ta);
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
 
-        ondeEleTa.pc++;
+        onde_pc_ta.pc++;
 
         // perto de onde o programa começa a colocar só instruções com 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 (eu acho)
-        if (instrucao == 0x1111) {
+        if (instrucao == 0x029A) {
             break;
         }
 
