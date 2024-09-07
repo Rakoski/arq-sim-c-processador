@@ -144,7 +144,7 @@ int main(const int argc, char **argv)
 
     for(int i = 0; i < tamanho_da_memoria; i++) {
         printf("memory[%d] = ", i);
-        printzaoDebug(memory[i]);
+        //printzaoDebug(memory[i]);
     }
 
     // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40)
@@ -153,7 +153,7 @@ int main(const int argc, char **argv)
     while (1) {
         const uint16_t instrucao = fetch_instrucao(memory, ondeEleTa.pc);
 
-        //print_pc(&ondeEleTa);
+        print_pc(&ondeEleTa);
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
