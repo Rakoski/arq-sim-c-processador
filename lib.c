@@ -61,12 +61,3 @@ int binario_pra_decimal(const int binarios[], int tamanho_do_vetor) {
 uint16_t fetch_instrucao(uint16_t *memory, uint16_t pc) {
     return memory[pc];
 }
-
-void print_estado_pc(aondeOProcessadorEstaAgora const *ondeEleTa) {
-    printf("PC: 0x%04X\n", ondeEleTa->pc);
-    for (int i = 0; i < 8; i++) {
-        printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->registers[i]);
-        if (i % 4 == 3) printf("\n");
-    }
-    printf("\n");
-}

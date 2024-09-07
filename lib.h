@@ -11,8 +11,6 @@ char* get_reg_name_str(int i);
 
 void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_size);
 
-struct aondeOProcessadorEstaAgora;
-
 static uint16_t extract_bits (const uint16_t v, const uint8_t bstart, const uint8_t blength)
 {
     const uint16_t mask = (1 << blength) - 1;
