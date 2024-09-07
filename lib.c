@@ -33,3 +33,40 @@ void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_
 
     fclose(fp);
 }
+
+typedef struct {
+    uint16_t pc;
+    uint16_t registers[8];
+} aondeOProcessadorEstaAgora;
+
+char *get_reg_name_str(int i) {
+    static char *reg_names[] = {
+        "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"
+};
+
+    if (i >= 0 && i < 8) {
+        return reg_names[i];
+    }
+    return "registrador inválido";
+}
+
+int binario_pra_decimal(const int binarios[], int tamanho_do_vetor) {
+    int decimal = 0;
+    for (int i = 0; i < tamanho_do_vetor; i++) {
+        decimal += binarios[i] * (1 << (tamanho_do_vetor - 1 - i));
+    }
+    return decimal;
+}
+
+uint16_t fetch_instrucao(uint16_t *memory, uint16_t pc) {
+    return memory[pc];
+}
+
+void print_estado_pc(aondeOProcessadorEstaAgora const *ondeEleTa) {
+    printf("PC: 0x%04X\n", ondeEleTa->pc);
+    for (int i = 0; i < 8; i++) {
+        printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->registers[i]);
+        if (i % 4 == 3) printf("\n");
+    }
+    printf("\n");
+}

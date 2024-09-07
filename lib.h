@@ -2,13 +2,18 @@
 #define __HEADER_LIB_H__
 
 #include <stdint.h>
-#include <math.h>
+
+uint16_t fetch_instrucao(uint16_t *memory, uint16_t pc);
+
+int binario_pra_decimal(const int binarios[], int tamanho_do_vetor);
+
+char* get_reg_name_str(int i);
 
 void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_size);
-// void print_binarios_pra_debug(const uint32_t *memory, uint32_t mem_size);
-// void print_binary(uint16_t num);
 
-static inline uint16_t extract_bits (const uint16_t v, const uint8_t bstart, const uint8_t blength)
+struct aondeOProcessadorEstaAgora;
+
+static uint16_t extract_bits (const uint16_t v, const uint8_t bstart, const uint8_t blength)
 {
     const uint16_t mask = (1 << blength) - 1;
 

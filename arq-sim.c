@@ -1,26 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <math.h>
 
 #include "lib.h"
-
-
-#include <stdio.h>
-#include <stdint.h>
 
 typedef struct {
     uint16_t pc;
     uint16_t registers[8];
 } aondeOProcessadorEstaAgora;
 
-uint16_t fetch_instrucao(uint16_t *memory, uint16_t pc) {
-    return memory[pc];
-}
-
-char *get_reg_name_str(int i);
-
-void print_processor_state(aondeOProcessadorEstaAgora *ondeEleTa) {
+void print_pc(aondeOProcessadorEstaAgora const *ondeEleTa) {
     printf("PC: 0x%04X\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
         printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->registers[i]);
@@ -29,27 +18,16 @@ void print_processor_state(aondeOProcessadorEstaAgora *ondeEleTa) {
     printf("\n");
 }
 
-char *get_reg_name_str(int i) {
-    static char *reg_names[] = {
-            "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"
-    };
-
-    if (i >= 0 && i < 8) {
-        return reg_names[i];
-    } else {
-        return "invalid_reg";
-    }
-}
-
 // nao da pra colocar div como chave em algum enum por causa do tipo div_t em c, assim opto por colocar div2
+// pelo q entendi structs é tipo hashmaps chave e valor
 typedef enum {
     add = 0, sub = 1, mul = 2, div2 = 3, cmp_equal = 4, cmp_neq = 5,
     load = 15, store = 16, syscall = 63
-} OpcodeR;
+} OpcodesR;
 
 typedef enum {
     jump = 0, jump_cond = 1, mov = 3
-} OpcodeI;
+} OpcodesI;
 
 const char* nomes_do_opcode_r[] = {
         [add] = "add", [sub] = "sub", [mul] = "mul", [div2] = "div",
@@ -60,14 +38,6 @@ const char* nomes_do_opcode_r[] = {
 const char* nomes_do_opcode_i[] = {
         [jump] = "jump", [jump_cond] = "jump_cond", [mov] = "mov"
 };
-
-int binario_pra_decimal(const int binarios[], int tamanho_do_vetor) {
-    int decimal = 0;
-    for (int i = 0; i < tamanho_do_vetor; i++) {
-        decimal += binarios[i] * (1 << (tamanho_do_vetor - 1 - i));
-    }
-    return decimal;
-}
 
 void printzaoDebug(uint16_t instrucao) {
     printf("Instrução: ");
@@ -141,18 +111,18 @@ void decodifica(uint16_t instrucao) {
         uint16_t op1 = extract_bits(instrucao, 3, 3);
         uint16_t op2 = extract_bits(instrucao, 0, 3);
 
-        printf("Opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
-        printf("Destination: r%d\n", dest);
-        printf("Operand 1: r%d\n", op1);
-        printf("Operand 2: r%d\n", op2);
+        printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
+        printf("reg dest: r%d\n", dest);
+        printf("reg 1: r%d\n", op1);
+        printf("reg 2: r%d\n", op2);
     } else {
         uint16_t opcode = extract_bits(instrucao, 13, 2);
         uint16_t reg = extract_bits(instrucao, 10, 3);
         uint16_t immediate = extract_bits(instrucao, 0, 10);
 
-        printf("Opcode: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
-        printf("Register: r%d\n", reg);
-        printf("Immediate: %d\n", immediate);
+        printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
+        printf("reg dest: r%d\n", reg);
+        printf("imediato: %d\n", immediate);
     }
 }
 
@@ -183,7 +153,7 @@ int main(int argc, char **argv)
     while (1) {
         uint16_t instrucao = fetch_instrucao(memory, ondeEleTa.pc);
 
-        print_processor_state(&ondeEleTa);
+        print_pc(&ondeEleTa);
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
