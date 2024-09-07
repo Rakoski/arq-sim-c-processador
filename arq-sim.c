@@ -172,7 +172,7 @@ int main(const int argc, char **argv) {
     const uint32_t tamanho_da_memoria = 0x0000FFF;
     uint16_t *memoria = calloc(tamanho_da_memoria, sizeof(uint16_t));
     if (!memoria) {
-        printf("memoria allocation failed\n");
+        printf("memory allocation failed\n");
         exit(1);
     }
 
@@ -189,6 +189,7 @@ int main(const int argc, char **argv) {
 
     while (1) {
         // busca da instrução é feita quando eu aperto o enter
+        // uint16_t pra eu lembrar que a arquitetura é 16 bits
         const uint16_t instrucao = memoria[onde_pc_ta.pc];
 
         print_pc(&onde_pc_ta);
