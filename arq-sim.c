@@ -172,7 +172,7 @@ int main(const int argc, char **argv) {
     const uint32_t tamanho_da_memoria = 0x0000FFF;
     uint16_t *memoria = calloc(tamanho_da_memoria, sizeof(uint16_t));
     if (!memoria) {
-        printf("memoria allocation failed\n");
+        printf("memory allocation failed\n");
         exit(1);
     }
 
