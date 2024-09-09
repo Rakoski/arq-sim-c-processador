@@ -128,22 +128,41 @@ void decodifica(uint16_t instrucao) {
     }
 }
 
-void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint32_t memoria) {
+void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint16_t *memoria) {
     char bit_formato = extract_bits(instrucao, 15, 1);
     char tipo = bit_formato ? 'I' : 'R';
 
     if (tipo == 'R') {
         const uint16_t opcode = extract_bits(instrucao, 9, 6);
-        const uint16_t dest = extract_bits(instrucao, 6, 3);
-        const uint16_t op1 = extract_bits(instrucao, 3, 3);
-        const uint16_t op2 = extract_bits(instrucao, 0, 3);
+        const uint16_t reg_dest = extract_bits(instrucao, 6, 3);
+        const uint16_t reg1 = extract_bits(instrucao, 3, 3);
+        const uint16_t reg2 = extract_bits(instrucao, 0, 3);
 
         switch(opcode) {
             case add:
-                estado_pc->quant_registradores[dest] = estado_pc->quant_registradores[op1] + estado_pc->quant_registradores[op2];
+                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] + estado_pc->quant_registradores[reg2];
                 break;
             case sub:
-                estado_pc->quant_registradores[dest] = estado_pc->quant_registradores[op1] - estado_pc->quant_registradores[op2];
+                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] - estado_pc->quant_registradores[reg2];
+                break;
+            case mul:
+                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] * estado_pc->quant_registradores[reg2];
+                break;
+            case div2:
+                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] / estado_pc->quant_registradores[reg2];
+                break;
+            case cmp_equal:
+                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] == estado_pc->quant_registradores[reg2];
+                break;
+            case cmp_neq:
+                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] != estado_pc->quant_registradores[reg2];
+                break;
+            case load:
+                // load r0, [r2] (pega um registrador de destino e coloca o que está alocado na memória no registrador 1 (da instrução))
+                estado_pc->quant_registradores[reg_dest] = memoria[estado_pc->quant_registradores[reg1]];
+                break;
+            case store:
+                memoria[estado_pc->quant_registradores[reg1]] = memoria[estado_pc->quant_registradores[reg2]];
                 break;
             default:
                 break;
@@ -196,7 +215,7 @@ int main(const int argc, char **argv) {
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
-        executa(&onde_pc_ta, instrucao, *memoria);
+        executa(&onde_pc_ta, instrucao, memoria);
 
         onde_pc_ta.pc++;
 
