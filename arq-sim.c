@@ -128,20 +128,41 @@ void decodifica(uint16_t instrucao) {
     }
 }
 
-void handle_syscall(aondeOProcessadorEstaAgora * estado_pc) {
+void handle_syscall(aondeOProcessadorEstaAgora * estado_pc, uint16_t *memoria) {
     switch (estado_pc->quant_registradores[0]) { // assuma que r0 contém o código do syscall
         case 1: // imprime o inteiro
             printf("%d", estado_pc->quant_registradores[1]);
             break;
+        case 2: // imprime uma string
+            {
+                uint16_t endereco = estado_pc->quant_registradores[1]; // assume que o endereço da string está em r1
+                while (memoria[endereco] != 0) {
+                    printf("%c", (char)memoria[endereco]);
+                    endereco++;
+                }
+            }
+            break;
+        case 3: // read (ler entrada)
+            {
+                int valor;
+                scanf("%d", &valor);
+                estado_pc->quant_registradores[1] = (uint16_t)valor;
+            }
+            break;
+        case 4: // write (escrever saída)
+            {
+                uint16_t valor = estado_pc->quant_registradores[1];
+                printf("%d", valor);
+            }
+            break;
         case 10: // sai do programa
             exit(0);
-
         default:
             printf("Syscall não reconhecido\n");
     }
 }
 
-void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint32_t memoria) {
+void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint16_t memoria) {
     char bit_formato = extract_bits(instrucao, 15, 1);
     char tipo = bit_formato ? 'I' : 'R';
 
@@ -159,7 +180,7 @@ void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint32_t
                 estado_pc->quant_registradores[dest] = estado_pc->quant_registradores[op1] - estado_pc->quant_registradores[op2];
                 break;
             case syscall:
-                handle_syscall(estado_pc);
+                handle_syscall(estado_pc, memoria);
                 break;
             default:
                 break;
