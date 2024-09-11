@@ -128,6 +128,19 @@ void decodifica(uint16_t instrucao) {
     }
 }
 
+void handle_syscall(aondeOProcessadorEstaAgora * estado_pc) {
+    switch (estado_pc->quant_registradores[0]) { // assuma que r0 contém o código do syscall
+        case 1: // imprime o inteiro
+            printf("%d", estado_pc->quant_registradores[1]);
+            break;
+        case 10: // sai do programa
+            exit(0);
+
+        default:
+            printf("Syscall não reconhecido\n");
+    }
+}
+
 void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint32_t memoria) {
     char bit_formato = extract_bits(instrucao, 15, 1);
     char tipo = bit_formato ? 'I' : 'R';
@@ -144,6 +157,9 @@ void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint32_t
                 break;
             case sub:
                 estado_pc->quant_registradores[dest] = estado_pc->quant_registradores[op1] - estado_pc->quant_registradores[op2];
+                break;
+            case syscall:
+                handle_syscall(estado_pc);
                 break;
             default:
                 break;
