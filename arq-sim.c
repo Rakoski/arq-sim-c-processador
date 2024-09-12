@@ -30,6 +30,8 @@ typedef enum {
     jump = 0, jump_cond = 1, mov = 3
 } OpcodesI;
 
+
+// pega os nomes a partir das structs definidas em cima
 const char* nomes_do_opcode_r[] = {
         [add] = "add", [sub] = "sub", [mul] = "mul", [div2] = "div",
         [cmp_equal] = "cmp_equal", [cmp_neq] = "cmp_neq",
@@ -40,70 +42,8 @@ const char* nomes_do_opcode_i[] = {
         [jump] = "jump", [jump_cond] = "jump_cond", [mov] = "mov"
 };
 
-void printzaoDebug(const uint16_t instrucao) {
-    printf("instrução: ");
-    for (int j = 15; j >= 0; j--) {
-        printf("%d", (instrucao & (1 << j)) ? 1 : 0);
-        if (j == 15 || j == 9 || j == 6 || j == 3) {
-            printf(" ");
-        }
-    }
-    printf("\n");
-
-    char tipo = (instrucao & (1 << 15)) ? 'I' : 'R';
-    printf("formato: %c\n", tipo);
-
-    if (tipo == 'R') {
-        int opcode_bits[6];
-        for (int j = 14; j >= 9; j--) {
-            opcode_bits[14 - j] = (instrucao & (1 << j)) ? 1 : 0;
-        }
-        int opcode = binario_pra_decimal(opcode_bits, 6);
-        printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
-
-        int dest_bits[3];
-        for (int j = 8; j >= 6; j--) {
-            dest_bits[8 - j] = (instrucao & (1 << j)) ? 1 : 0;
-        }
-        printf("reg dest: r%d\n", binario_pra_decimal(dest_bits, 3));
-
-        int op1_bits[3];
-        for (int j = 5; j >= 3; j--) {
-            op1_bits[5 - j] = (instrucao & (1 << j)) ? 1 : 0;
-        }
-        printf("reg 1: r%d\n", binario_pra_decimal(op1_bits, 3));
-
-        int op2_bits[3];
-        for (int j = 2; j >= 0; j--) {
-            op2_bits[2 - j] = (instrucao & (1 << j)) ? 1 : 0;
-        }
-        printf("reg 2: r%d\n", binario_pra_decimal(op2_bits, 3));
-    } else {
-        int opcode_bits[2];
-        for (int j = 14; j >= 13; j--) {
-            opcode_bits[14 - j] = (instrucao & (1 << j)) ? 1 : 0;
-        }
-        int opcode = binario_pra_decimal(opcode_bits, 2);
-        printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
-
-        int reg_bits[3];
-        for (int j = 12; j >= 10; j--) {
-            reg_bits[12 - j] = (instrucao & (1 << j)) ? 1 : 0;
-        }
-        printf("reg dest: r%d\n", binario_pra_decimal(reg_bits, 3));
-
-        int imm_bits[10];
-        for (int j = 9; j >= 0; j--) {
-            imm_bits[9 - j] = (instrucao & (1 << j)) ? 1 : 0;
-        }
-        printf("imediato: %d\n", binario_pra_decimal(imm_bits, 10));
-    }
-
-    printf("\n");
-}
-
 void decodifica(uint16_t instrucao) {
-    char bit_formato = extract_bits(instrucao, 15, 1);
+    uint16_t bit_formato = extract_bits(instrucao, 15, 1);
     char tipo = bit_formato ? 'I' : 'R';
     printf("formato: %c\n", tipo);
 
@@ -129,7 +69,7 @@ void decodifica(uint16_t instrucao) {
 }
 
 void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint16_t *memoria) {
-    char bit_formato = extract_bits(instrucao, 15, 1);
+    uint16_t bit_formato = extract_bits(instrucao, 15, 1);
     char tipo = bit_formato ? 'I' : 'R';
 
     if (tipo == 'R') {
