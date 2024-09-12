@@ -11,6 +11,7 @@ typedef struct {
 
 // acessa e pega o que ta naquele endereço de memória (do ponteiro do struct aondeOProcessadorEstaAgora que o pc e o  ta)
 void print_pc(const aondeOProcessadorEstaAgora *ondeEleTa) {
+    printf("onde o processador ta: %p \n", ondeEleTa);
     printf("PC: 0x%04X\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
         printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->quant_registradores[i]);
@@ -68,6 +69,40 @@ void decodifica(uint16_t instrucao) {
     }
 }
 
+void handle_syscall(aondeOProcessadorEstaAgora * estado_pc, uint16_t *memoria) {
+    switch (estado_pc->quant_registradores[0]) {
+        case 1: // imprime o inteiro
+            printf("%d", estado_pc->quant_registradores[1]);
+            break;
+        case 2: // imprime uma string
+            {
+                uint16_t endereco = estado_pc->quant_registradores[1]; // assume que o endereço da string está em r1
+                while (memoria[endereco] != 0) {
+                    printf("%c", (char)memoria[endereco]);
+                    endereco++;
+                }
+            }
+            break;
+        case 3: // read (ler entrada)
+            {
+                int valor;
+                scanf("%d", &valor);
+                estado_pc->quant_registradores[1] = (uint16_t)valor;
+            }
+            break;
+        case 4: // write (escrever saída)
+            {
+                uint16_t valor = estado_pc->quant_registradores[1];
+                printf("%d", valor);
+            }
+            break;
+        case 10: // sai do programa
+            exit(0);
+        default:
+            printf("Syscall não reconhecido\n");
+    }
+}
+
 void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint16_t *memoria) {
     uint16_t bit_formato = extract_bits(instrucao, 15, 1);
     char tipo = bit_formato ? 'I' : 'R';
@@ -103,6 +138,9 @@ void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint16_t
                 break;
             case store:
                 memoria[estado_pc->quant_registradores[reg1]] = memoria[estado_pc->quant_registradores[reg2]];
+                break;
+            case syscall:
+                handle_syscall(estado_pc, memoria);
                 break;
             default:
                 break;
