@@ -12,9 +12,9 @@ typedef struct {
 // acessa e pega o que ta naquele endereço de memória (do ponteiro do struct aondeOProcessadorEstaAgora que o pc e o  ta)
 void print_pc(const aondeOProcessadorEstaAgora *ondeEleTa) {
     printf("onde o processador ta: %p \n", ondeEleTa);
-    printf("PC: 0x%04X\n", ondeEleTa->pc);
+    printf("PC: %X\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
-        printf("%s: 0x%04X ", get_reg_name_str(i), ondeEleTa->quant_registradores[i]);
+        printf("%s: %X ", get_reg_name_str(i), ondeEleTa->quant_registradores[i]);
         if (i % 4 == 3) printf("\n");
     }
     printf("\n");
