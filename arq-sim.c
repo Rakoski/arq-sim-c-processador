@@ -7,10 +7,19 @@
 typedef struct {
     uint16_t pc;
     uint16_t registradores[8];
-} aondeOProcessadorEstaAgora;
+} AondeProgramCounterEsta;
 
-// acessa e pega o que ta naquele endereço de memória (do ponteiro do struct aondeOProcessadorEstaAgora que o pc e o  ta)
-void print_pc(const aondeOProcessadorEstaAgora *ondeEleTa) {
+typedef struct {
+    char tipo;
+    uint16_t opcode;
+    uint16_t reg_dest;
+    uint16_t reg1;
+    uint16_t reg2;
+    uint16_t imediato;
+} InstrucaoDecodada;
+
+// acessa e pega o que ta naquele endereço de memória (do ponteiro do struct AondeProgramCounterEsta que o pc e o  ta)
+void print_pc(const AondeProgramCounterEsta *ondeEleTa) {
     printf("onde o processador ta: %p \n", ondeEleTa);
     printf("PC: %X\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
@@ -43,33 +52,40 @@ const char* nomes_do_opcode_i[] = {
         [jump] = "jump", [jump_cond] = "jump_cond", [mov] = "mov"
 };
 
-void decodifica(uint16_t instrucao) {
+InstrucaoDecodada decodificador(uint16_t instrucao) {
+    InstrucaoDecodada decodificacao;
     uint16_t bit_formato = extract_bits(instrucao, 15, 1);
-    char tipo = bit_formato ? 'I' : 'R';
-    printf("formato: %c\n", tipo);
+    decodificacao.tipo = bit_formato ? 'I' : 'R';
+    printf("formato: %c\n", decodificacao.tipo);
 
-    if (tipo == 'R') {
-        const uint16_t opcode = extract_bits(instrucao, 9, 6);
-        const uint16_t dest = extract_bits(instrucao, 6, 3);
-        const uint16_t op1 = extract_bits(instrucao, 3, 3);
-        const uint16_t op2 = extract_bits(instrucao, 0, 3);
+    if (decodificacao.tipo == 'R') {
+        decodificacao.opcode = extract_bits(instrucao, 9, 6);
+        decodificacao.reg_dest = extract_bits(instrucao, 6, 3);
+        decodificacao.reg1 = extract_bits(instrucao, 3, 3);
+        decodificacao.reg2 = extract_bits(instrucao, 0, 3);
 
-        printf("opcode: %d (%s)\n", opcode, nomes_do_opcode_r[opcode]);
-        printf("reg dest: r%d\n", dest);
-        printf("reg 1: r%d\n", op1);
-        printf("reg 2: r%d\n", op2);
+        printf("opcode: %d %s\n", decodificacao.opcode, nomes_do_opcode_r[decodificacao.opcode]);
+        printf("reg decodificacao.reg_dest: r%d\n", decodificacao.reg_dest);
+        printf("reg 1: r%d\n", decodificacao.reg1);
+        printf("reg 2: r%d\n", decodificacao.reg2);
+
+        decodificacao.imediato = NULL;
     } else {
-        const uint16_t opcode = extract_bits(instrucao, 13, 2);
-        const uint16_t reg = extract_bits(instrucao, 10, 3);
-        const uint16_t immediate = extract_bits(instrucao, 0, 10);
+        decodificacao.opcode = extract_bits(instrucao, 13, 2);
+        decodificacao.reg_dest = extract_bits(instrucao, 10, 3);
+        decodificacao.imediato = extract_bits(instrucao, 0, 10);
 
-        printf("opdoce: %d (%s)\n", opcode, nomes_do_opcode_i[opcode]);
-        printf("reg 1: r%d\n", reg);
-        printf("imediato: %d\n", immediate);
+        printf("opdoce: %d (%s)\n", decodificacao.opcode, nomes_do_opcode_i[decodificacao.opcode]);
+        printf("reg 1: r%d\n", decodificacao.reg_dest);
+        printf("imediato: %d\n", decodificacao.imediato);
+
+        decodificacao.reg1 = NULL;
+        decodificacao.reg2 = NULL;
     }
+    return decodificacao;
 }
 
-void handle_syscall(aondeOProcessadorEstaAgora * estado_pc, uint16_t *memoria) {
+void handle_syscall(AondeProgramCounterEsta * estado_pc, uint16_t *memoria) {
     switch (estado_pc->registradores[0]) { // assuma que r0 contém o código do syscall
         case 0: // imprime o inteiro
             printf("Programa encerrado. \n");
@@ -128,15 +144,15 @@ uint16_t ULA(uint16_t reg1, uint16_t reg2, uint16_t opcode ) {
 }
 
 // estaod_pc tem em qual instrucao nós estamos (pc na struct) e os registradores do processador
-void banco_registradores(aondeOProcessadorEstaAgora *estado_pc, const uint16_t instrucao, uint16_t *memoria) {
-    uint16_t bit_formato = extract_bits(instrucao, 15, 1);
-    char tipo = bit_formato ? 'I' : 'R';
+void banco_registradores(AondeProgramCounterEsta *estado_pc, const InstrucaoDecodada decodada, uint16_t *memoria) {
+    const uint16_t tipo = decodada.tipo;
+    const uint16_t opcode = decodada.opcode;
+    const uint16_t reg_dest = decodada.reg_dest;
+    const uint16_t reg1 = decodada.reg1;
+    const uint16_t reg2 = decodada.reg2;
+    const uint16_t imediato = decodada.imediato;
 
     if (tipo == 'R') {
-        const uint16_t opcode = extract_bits(instrucao, 9, 6);
-        const uint16_t reg_dest = extract_bits(instrucao, 6, 3);
-        const uint16_t reg1 = extract_bits(instrucao, 3, 3);
-        const uint16_t reg2 = extract_bits(instrucao, 0, 3);
 
         switch(opcode) {
             case add:
@@ -165,16 +181,17 @@ void banco_registradores(aondeOProcessadorEstaAgora *estado_pc, const uint16_t i
                 break;
         }
     } else {
-        const uint16_t opcode = extract_bits(instrucao, 13, 2);
-        const uint16_t reg = extract_bits(instrucao, 10, 3);
-        const uint16_t imediato = extract_bits(instrucao, 0, 10);
-
         switch(opcode) {
-            case mov:
-                estado_pc->registradores[reg] = imediato;
-                break;
             case jump:
                 estado_pc->pc = imediato -1;
+            case jump_cond:
+                if (estado_pc->registradores[reg_dest] != 0) {
+                    estado_pc->pc = imediato -1;
+                }
+                break;
+            case mov:
+                estado_pc->registradores[reg_dest] = imediato;
+                break;
             default:
                 break;
         }
@@ -204,7 +221,7 @@ int main(const int argc, char **argv) {
 
     // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40
     // na primeira instrução 0x0001)
-    aondeOProcessadorEstaAgora onde_pc_ta = {0};
+    AondeProgramCounterEsta onde_pc_ta = {0};
 
     while (1) {
         // busca da instrução é feita quando eu aperto o enter
@@ -213,8 +230,8 @@ int main(const int argc, char **argv) {
         print_pc(&onde_pc_ta);
        // printzaoDebug(instrucao);
 
-        decodifica(instrucao);
-        banco_registradores(&onde_pc_ta, instrucao, memoria);
+        const InstrucaoDecodada decodada = decodificador(instrucao);
+        banco_registradores(&onde_pc_ta, decodada, memoria);
 
         onde_pc_ta.pc++;
 
