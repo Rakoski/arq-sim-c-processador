@@ -6,7 +6,7 @@
 
 typedef struct {
     uint16_t pc;
-    uint16_t quant_registradores[8];
+    uint16_t registradores[8];
 } aondeOProcessadorEstaAgora;
 
 // acessa e pega o que ta naquele endereço de memória (do ponteiro do struct aondeOProcessadorEstaAgora que o pc e o  ta)
@@ -14,7 +14,7 @@ void print_pc(const aondeOProcessadorEstaAgora *ondeEleTa) {
     printf("onde o processador ta: %p \n", ondeEleTa);
     printf("PC: %X\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
-        printf("%s: %X ", get_reg_name_str(i), ondeEleTa->quant_registradores[i]);
+        printf("%s: %X ", get_reg_name_str(i), ondeEleTa->registradores[i]);
         if (i % 4 == 3) printf("\n");
     }
     printf("\n");
@@ -70,13 +70,13 @@ void decodifica(uint16_t instrucao) {
 }
 
 void handle_syscall(aondeOProcessadorEstaAgora * estado_pc, uint16_t *memoria) {
-    switch (estado_pc->quant_registradores[0]) { // assuma que r0 contém o código do syscall
+    switch (estado_pc->registradores[0]) { // assuma que r0 contém o código do syscall
         case 0: // imprime o inteiro
             printf("Programa encerrado. \n");
             exit(0);
         case 1: // imprime uma string
             {
-                uint16_t endereco = estado_pc->quant_registradores[1]; // assume que o endereço da string está em r1
+                uint16_t endereco = estado_pc->registradores[1]; // assume que o endereço da string está em r1
                 while (memoria[endereco] != 0) {
                     printf("%c", (char)memoria[endereco]);
                     endereco++;
@@ -87,22 +87,22 @@ void handle_syscall(aondeOProcessadorEstaAgora * estado_pc, uint16_t *memoria) {
             printf("\n");
             break;
         case 3: // imprimir inteiro
-            printf("%d", estado_pc->quant_registradores[1]);
+            printf("%d", estado_pc->registradores[1]);
             break;
         case 4: // alocar memoria (malloc)
             {
-                uint16_t tamanho = estado_pc->quant_registradores[1];
+                uint16_t tamanho = estado_pc->registradores[1];
                 // Aqui você precisaria implementar a alocação de memória
                 // Por exemplo:
                 // void* novo_espaco = malloc(tamanho);
-                // estado_pc->quant_registradores[1] = (uint16_t)((uintptr_t)novo_espaco & 0xFFFF);
-                // estado_pc->quant_registradores[2] = (uint16_t)(((uintptr_t)novo_espaco >> 16) & 0xFFFF);
+                // estado_pc->registradores[1] = (uint16_t)((uintptr_t)novo_espaco & 0xFFFF);
+                // estado_pc->registradores[2] = (uint16_t)(((uintptr_t)novo_espaco >> 16) & 0xFFFF);
                 printf("Alocação de memória simulada: %d bytes\n", tamanho);
             }
             break;
         case 5: // desalocar memória (free)
             {
-                uint16_t endereco = estado_pc->quant_registradores[1];
+                uint16_t endereco = estado_pc->registradores[1];
                 // precisa implementar desalocação de memória
                 // ex.: free((void*)endereco);
                 printf("Desalocação de memória simulada no endereço: %d\n", endereco);
@@ -112,7 +112,23 @@ void handle_syscall(aondeOProcessadorEstaAgora * estado_pc, uint16_t *memoria) {
     }
 }
 
-void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint16_t *memoria) {
+uint16_t ULA(uint16_t reg1, uint16_t reg2, uint16_t opcode ) {
+    switch (opcode) {
+        case add:
+            return reg1 + reg2;
+        case sub:
+            return reg1 - reg2;
+        case mul:
+            return reg1 * reg2;
+        case div2:
+            return reg1 / reg2;
+        default:
+            return 0;
+    }
+}
+
+// estaod_pc tem em qual instrucao nós estamos (pc na struct) e os registradores do processador
+void banco_registradores(aondeOProcessadorEstaAgora *estado_pc, const uint16_t instrucao, uint16_t *memoria) {
     uint16_t bit_formato = extract_bits(instrucao, 15, 1);
     char tipo = bit_formato ? 'I' : 'R';
 
@@ -124,29 +140,23 @@ void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint16_t
 
         switch(opcode) {
             case add:
-                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] + estado_pc->quant_registradores[reg2];
-                break;
             case sub:
-                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] - estado_pc->quant_registradores[reg2];
-                break;
             case mul:
-                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] * estado_pc->quant_registradores[reg2];
-                break;
             case div2:
-                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] / estado_pc->quant_registradores[reg2];
+                estado_pc->registradores[reg_dest] = ULA(reg1, reg2, opcode);
                 break;
             case cmp_equal:
-                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] == estado_pc->quant_registradores[reg2];
+                estado_pc->registradores[reg_dest] = estado_pc->registradores[reg1] == estado_pc->registradores[reg2];
                 break;
             case cmp_neq:
-                estado_pc->quant_registradores[reg_dest] = estado_pc->quant_registradores[reg1] != estado_pc->quant_registradores[reg2];
+                estado_pc->registradores[reg_dest] = estado_pc->registradores[reg1] != estado_pc->registradores[reg2];
                 break;
             case load:
                 // load r0, [r2] (pega um registrador de destino e coloca o que está alocado na memória no registrador 1 (da instrução))
-                estado_pc->quant_registradores[reg_dest] = memoria[estado_pc->quant_registradores[reg1]];
+                estado_pc->registradores[reg_dest] = memoria[estado_pc->registradores[reg1]];
                 break;
             case store:
-                memoria[estado_pc->quant_registradores[reg1]] = memoria[estado_pc->quant_registradores[reg2]];
+                memoria[estado_pc->registradores[reg1]] = memoria[estado_pc->registradores[reg2]];
                 break;
             case syscall:
                 handle_syscall(estado_pc, memoria);
@@ -157,12 +167,14 @@ void executa(aondeOProcessadorEstaAgora *estado_pc, uint16_t instrucao, uint16_t
     } else {
         const uint16_t opcode = extract_bits(instrucao, 13, 2);
         const uint16_t reg = extract_bits(instrucao, 10, 3);
-        const uint16_t immediate = extract_bits(instrucao, 0, 10);
+        const uint16_t imediato = extract_bits(instrucao, 0, 10);
 
         switch(opcode) {
             case mov:
-                estado_pc->quant_registradores[reg] = immediate;
+                estado_pc->registradores[reg] = imediato;
                 break;
+            case jump:
+                estado_pc->pc = imediato -1;
             default:
                 break;
         }
@@ -176,8 +188,9 @@ int main(const int argc, char **argv) {
     }
 
     const uint32_t tamanho_da_memoria = 0x0000FFF;
-    uint16_t *memoria = calloc(tamanho_da_memoria, sizeof(uint16_t));
-    if (!memoria) {
+    uint16_t *memoria = malloc(tamanho_da_memoria);
+    // tava dando um warning na minha ide
+    if (memoria == NULL) {
         printf("memory allocation failed\n");
         exit(1);
     }
@@ -201,7 +214,7 @@ int main(const int argc, char **argv) {
        // printzaoDebug(instrucao);
 
         decodifica(instrucao);
-        executa(&onde_pc_ta, instrucao, memoria);
+        banco_registradores(&onde_pc_ta, instrucao, memoria);
 
         onde_pc_ta.pc++;
 
