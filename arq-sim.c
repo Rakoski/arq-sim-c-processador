@@ -158,13 +158,25 @@ void banco_registradores(AondeProgramCounterEsta *estado_pc, const InstrucaoDeco
             case sub:
             case mul:
             case div2:
-                estado_pc->registradores[reg_dest] = ULA(reg1, reg2, opcode);
+                estado_pc->registradores[reg_dest] = ULA(
+                estado_pc->registradores[reg1],
+                estado_pc->registradores[reg2],
+                opcode
+                );
                 break;
             case cmp_equal:
-                estado_pc->registradores[reg_dest] = estado_pc->registradores[reg1] == estado_pc->registradores[reg2];
+                if (estado_pc->registradores[reg1] == estado_pc->registradores[reg2]) {
+                    estado_pc->registradores[reg_dest] = 1;
+                } else {
+                    estado_pc->registradores[reg_dest] = 0;
+                }
                 break;
             case cmp_neq:
-                estado_pc->registradores[reg_dest] = estado_pc->registradores[reg1] != estado_pc->registradores[reg2];
+                if (estado_pc->registradores[reg1] != estado_pc->registradores[reg2]) {
+                    estado_pc->registradores[reg_dest] = 1;
+                } else {
+                    estado_pc->registradores[reg_dest] = 0;
+                }
                 break;
             case load:
                 // load r0, [r2] (pega um registrador de destino e coloca o que está alocado na memória no registrador 1 (da instrução))
