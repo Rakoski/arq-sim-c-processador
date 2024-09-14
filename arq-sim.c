@@ -54,7 +54,7 @@ const char* nomes_do_opcode_i[] = {
 
 InstrucaoDecodada decodificador(uint16_t instrucao) {
     InstrucaoDecodada decodificacao;
-    uint16_t bit_formato = extract_bits(instrucao, 15, 1);
+    const uint16_t bit_formato = extract_bits(instrucao, 15, 1);
     decodificacao.tipo = bit_formato ? 'I' : 'R';
     printf("formato: %c\n", decodificacao.tipo);
 
