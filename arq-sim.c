@@ -153,7 +153,6 @@ void banco_registradores(AondeProgramCounterEsta *estado_pc, const InstrucaoDeco
     const uint16_t imediato = decodada.imediato;
 
     if (tipo == 'R') {
-
         switch(opcode) {
             case add:
             case sub:
