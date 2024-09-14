@@ -23,7 +23,7 @@ void print_pc(const AondeProgramCounterEsta *ondeEleTa) {
     printf("onde o processador ta: %p \n", ondeEleTa);
     printf("PC: %X\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
-        printf("%s: %X ", get_reg_name_str(i), ondeEleTa->registradores[i]);
+        printf("%s: %d ", get_reg_name_str(i), ondeEleTa->registradores[i]);
         if (i % 4 == 3) printf("\n");
     }
     printf("\n");
@@ -65,7 +65,7 @@ InstrucaoDecodada decodificador(uint16_t instrucao) {
         decodificacao.reg2 = extract_bits(instrucao, 0, 3);
 
         printf("opcode: %d %s\n", decodificacao.opcode, nomes_do_opcode_r[decodificacao.opcode]);
-        printf("reg decodificacao.reg_dest: r%d\n", decodificacao.reg_dest);
+        printf("reg_dest: r%d\n", decodificacao.reg_dest);
         printf("reg 1: r%d\n", decodificacao.reg1);
         printf("reg 2: r%d\n", decodificacao.reg2);
 
