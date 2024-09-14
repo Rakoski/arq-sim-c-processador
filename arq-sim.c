@@ -21,7 +21,7 @@ typedef struct {
 // acessa e pega o que ta naquele endereço de memória (do ponteiro do struct AondeProgramCounterEsta que o pc e o  ta)
 void print_pc(const AondeProgramCounterEsta *ondeEleTa) {
     printf("onde o processador ta: %p \n", ondeEleTa);
-    printf("PC: %X\n", ondeEleTa->pc);
+    printf("PC: %d\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
         printf("%s: %d ", get_reg_name_str(i), ondeEleTa->registradores[i]);
         if (i % 4 == 3) printf("\n");
