@@ -70,11 +70,11 @@ void decodifica(uint16_t instrucao) {
 }
 
 void handle_syscall(aondeOProcessadorEstaAgora * estado_pc, uint16_t *memoria) {
-    switch (estado_pc->quant_registradores[0]) {
-        case 1: // imprime o inteiro
-            printf("%d", estado_pc->quant_registradores[1]);
-            break;
-        case 2: // imprime uma string
+    switch (estado_pc->quant_registradores[0]) { // assuma que r0 contém o código do syscall
+        case 0: // imprime o inteiro
+            printf("Programa encerrado. \n");
+            exit(0);
+        case 1: // imprime uma string
             {
                 uint16_t endereco = estado_pc->quant_registradores[1]; // assume que o endereço da string está em r1
                 while (memoria[endereco] != 0) {
@@ -83,21 +83,30 @@ void handle_syscall(aondeOProcessadorEstaAgora * estado_pc, uint16_t *memoria) {
                 }
             }
             break;
-        case 3: // read (ler entrada)
+        case 2: // imprimir nova linha
+            printf("\n");
+            break;
+        case 3: // imprimir inteiro
+            printf("%d", estado_pc->quant_registradores[1]);
+            break;
+        case 4: // alocar memoria (malloc)
             {
-                int valor;
-                scanf("%d", &valor);
-                estado_pc->quant_registradores[1] = (uint16_t)valor;
+                uint16_t tamanho = estado_pc->quant_registradores[1];
+                // Aqui você precisaria implementar a alocação de memória
+                // Por exemplo:
+                // void* novo_espaco = malloc(tamanho);
+                // estado_pc->quant_registradores[1] = (uint16_t)((uintptr_t)novo_espaco & 0xFFFF);
+                // estado_pc->quant_registradores[2] = (uint16_t)(((uintptr_t)novo_espaco >> 16) & 0xFFFF);
+                printf("Alocação de memória simulada: %d bytes\n", tamanho);
             }
             break;
-        case 4: // write (escrever saída)
+        case 5: // desalocar memória (free)
             {
-                uint16_t valor = estado_pc->quant_registradores[1];
-                printf("%d", valor);
+                uint16_t endereco = estado_pc->quant_registradores[1];
+                // precisa implementar desalocação de memória
+                // ex.: free((void*)endereco);
+                printf("Desalocação de memória simulada no endereço: %d\n", endereco);
             }
-            break;
-        case 10: // sai do programa
-            exit(0);
         default:
             printf("Syscall não reconhecido\n");
     }
@@ -186,7 +195,6 @@ int main(const int argc, char **argv) {
 
     while (1) {
         // busca da instrução é feita quando eu aperto o enter
-        // uint16_t pra eu lembrar que a arquitetura é 16 bits
         const uint16_t instrucao = memoria[onde_pc_ta.pc];
 
         print_pc(&onde_pc_ta);
