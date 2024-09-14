@@ -34,11 +34,6 @@ void load_binary_to_memory (const char *fname, void *memory, const uint32_t mem_
     fclose(fp);
 }
 
-typedef struct {
-    uint16_t pc;
-    uint16_t registers[8];
-} aondeOProcessadorEstaAgora;
-
 char *get_reg_name_str(int i) {
     static char *reg_names[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
     return reg_names[i];
