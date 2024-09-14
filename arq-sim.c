@@ -69,7 +69,7 @@ InstrucaoDecodada decodificador(uint16_t instrucao) {
         printf("reg 1: r%d\n", decodificacao.reg1);
         printf("reg 2: r%d\n", decodificacao.reg2);
 
-        decodificacao.imediato = NULL;
+        decodificacao.imediato = 0;
     } else {
         decodificacao.opcode = extract_bits(instrucao, 13, 2);
         decodificacao.reg_dest = extract_bits(instrucao, 10, 3);
@@ -79,8 +79,8 @@ InstrucaoDecodada decodificador(uint16_t instrucao) {
         printf("reg 1: r%d\n", decodificacao.reg_dest);
         printf("imediato: %d\n", decodificacao.imediato);
 
-        decodificacao.reg1 = NULL;
-        decodificacao.reg2 = NULL;
+        decodificacao.reg1 = 0;
+        decodificacao.reg2 = 0;
     }
     return decodificacao;
 }
