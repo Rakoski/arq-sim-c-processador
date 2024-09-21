@@ -86,41 +86,37 @@ InstrucaoDecodada decodificador(uint16_t instrucao) {
 }
 
 void handle_syscall(AondeProgramCounterEsta * estado_pc, uint16_t *memoria) {
-    switch (estado_pc->registradores[0]) { // assuma que r0 contém o código do syscall
-        case 0: // imprime o inteiro
-            printf("Programa encerrado. \n");
+    switch (estado_pc->registradores[0]) {
+        case 0:
             exit(0);
-        case 1: // imprime uma string
+        case 1:
             {
-                uint16_t endereco = estado_pc->registradores[1]; // assume que o endereço da string está em r1
+                uint16_t endereco = estado_pc->registradores[1];
                 while (memoria[endereco] != 0) {
-                    printf("%c", (char)memoria[endereco]);
+                    printf("\n %c \n", (char)memoria[endereco]);
                     endereco++;
                 }
             }
             break;
-        case 2: // imprimir nova linha
+        case 2:
             printf("\n");
             break;
-        case 3: // imprimir inteiro
+        case 3:
             printf("%d", estado_pc->registradores[1]);
             break;
-        case 4: // alocar memoria (malloc)
+        case 4:
             {
                 uint16_t tamanho = estado_pc->registradores[1];
-                // Aqui você precisaria implementar a alocação de memória
-                // Por exemplo:
-                // void* novo_espaco = malloc(tamanho);
-                // estado_pc->registradores[1] = (uint16_t)((uintptr_t)novo_espaco & 0xFFFF);
-                // estado_pc->registradores[2] = (uint16_t)(((uintptr_t)novo_espaco >> 16) & 0xFFFF);
+                void* novo_espaco = malloc(tamanho);
+                estado_pc->registradores[1] = (uint16_t)((uintptr_t)novo_espaco & 0xFFFF);
+                estado_pc->registradores[2] = (uint16_t)(((uintptr_t)novo_espaco >> 16) & 0xFFFF);
                 printf("Alocação de memória simulada: %d bytes\n", tamanho);
             }
             break;
-        case 5: // desalocar memória (free)
+        case 5:
             {
                 uint16_t endereco = estado_pc->registradores[1];
-                // precisa implementar desalocação de memória
-                // ex.: free((void*)endereco);
+                free((void*)endereco);
                 printf("Desalocação de memória simulada no endereço: %d\n", endereco);
             }
         default:
