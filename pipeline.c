@@ -9,7 +9,7 @@ uint16_t memoria[MEMORY_SIZE];
 
 typedef struct {
     uint16_t pc;
-    uint16_t registradores[8];
+    uint16_t instrucao;
 } Busca;
 
 typedef struct {
@@ -36,7 +36,7 @@ typedef struct {
     Decodifica decodifica;
     Executa executa;
     Writeback writeback;
-
+    uint16_t registradores[8];
 } EstadoDaPipeline;
 
 typedef enum {
@@ -59,11 +59,11 @@ const char* nomes_do_opcode_i[] = {
         [jump] = "jump", [jump_cond] = "jump_cond", [mov] = "mov"
 };
 
-void print_pc(const Busca *ondeEleTa) {
+void print_pc(const Busca *ondeEleTa, const EstadoDaPipeline *estado_da_pipeline) {
     printf("onde o processador ta: %p \n", ondeEleTa);
     printf("PC: %d\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
-        printf("%s: %d ", get_reg_name_str(i), ondeEleTa->registradores[i]);
+        printf("%s: %d ", get_reg_name_str(i), estado_da_pipeline->registradores[i]);
         if (i % 4 == 3) printf("\n");
     }
     printf("\n");
@@ -84,6 +84,11 @@ uint16_t ULA(uint16_t reg1, uint16_t reg2, uint16_t opcode ) {
     }
 }
 
+void busca(EstadoDaPipeline *estado_da_pipeline, const uint16_t *memoria) {
+    estado_da_pipeline->busca.instrucao = memoria[estado_da_pipeline->busca.pc];
+    estado_da_pipeline->busca.pc++;
+}
+
 int main(const int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s [bin_name]\n", argv[0]);
@@ -95,7 +100,7 @@ int main(const int argc, char **argv) {
     EstadoDaPipeline estado_da_pipeline = {0};
 
     while (1) {
-
+        busca(&estado_da_pipeline, memoria);
         getchar();
     }
 
