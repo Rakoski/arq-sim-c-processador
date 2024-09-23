@@ -47,6 +47,7 @@ const char* nomes_do_opcode_i[] = {
 // acessa e pega o que ta naquele endereço de memória (do ponteiro do struct AondeProgramCounterEsta que o pc e o  ta)
 void print_pc(const AondeProgramCounterEsta *ondeEleTa) {
     printf("onde o processador ta: %p \n", ondeEleTa);
+    // ponteiro pra uma struct
     printf("PC: %d\n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
         printf("%s: %d ", get_reg_name_str(i), ondeEleTa->registradores[i]);
@@ -216,12 +217,10 @@ int main(const int argc, char **argv) {
 
     load_binary_to_memory(argv[1], memoria, sizeof(memoria));
 
-    // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40
-    // na primeira instrução 0x0001)
     AondeProgramCounterEsta onde_pc_ta = {0};
 
     while (1) {
-        // busca da instrução é feita quando eu aperto o enter
+        // busca da instrução é feita quando eu aperto o enter (acessando a struct diretamente, por isso o ".")
         const uint16_t instrucao = memoria[onde_pc_ta.pc];
 
         print_pc(&onde_pc_ta);

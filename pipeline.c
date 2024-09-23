@@ -1,9 +1,11 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
 #include "lib.h"
+
+#define MEMORY_SIZE 0X0000FF
+uint16_t memoria[MEMORY_SIZE];
 
 typedef struct {
     uint16_t pc;
@@ -88,18 +90,14 @@ int main(const int argc, char **argv) {
         exit(1);
     }
 
-    load_binary_to_memory(argv[1], memoria, tamanho_da_memoria);
+    load_binary_to_memory(argv[1], memoria, sizeof(memoria));
 
     EstadoDaPipeline estado_da_pipeline = {0};
 
     while (1) {
-        if (instrucao == 0x029A) {
-            break;
-        }
 
         getchar();
     }
 
-    free(memoria);
     return 0;
 }
