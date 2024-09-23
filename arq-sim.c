@@ -4,6 +4,9 @@
 
 #include "lib.h"
 
+#define MEMORY_SIZE 0x0000FFF
+uint16_t memoria[MEMORY_SIZE];
+
 typedef struct {
     uint16_t pc;
     uint16_t registradores[8];
@@ -17,17 +20,6 @@ typedef struct {
     uint16_t reg2;
     uint16_t imediato;
 } InstrucaoDecodada;
-
-// acessa e pega o que ta naquele endereço de memória (do ponteiro do struct AondeProgramCounterEsta que o pc e o  ta)
-void print_pc(const AondeProgramCounterEsta *ondeEleTa) {
-    printf("onde o processador ta: %p \n", ondeEleTa);
-    printf("PC: %d\n", ondeEleTa->pc);
-    for (int i = 0; i < 8; i++) {
-        printf("%s: %d ", get_reg_name_str(i), ondeEleTa->registradores[i]);
-        if (i % 4 == 3) printf("\n");
-    }
-    printf("\n");
-}
 
 // nao da pra colocar div como chave em algum enum por causa do tipo div_t em c, assim opto por colocar div2
 // pelo q entendi structs é tipo hashmaps chave e valor
@@ -51,6 +43,17 @@ const char* nomes_do_opcode_r[] = {
 const char* nomes_do_opcode_i[] = {
         [jump] = "jump", [jump_cond] = "jump_cond", [mov] = "mov"
 };
+
+// acessa e pega o que ta naquele endereço de memória (do ponteiro do struct AondeProgramCounterEsta que o pc e o  ta)
+void print_pc(const AondeProgramCounterEsta *ondeEleTa) {
+    printf("onde o processador ta: %p \n", ondeEleTa);
+    printf("PC: %d\n", ondeEleTa->pc);
+    for (int i = 0; i < 8; i++) {
+        printf("%s: %d ", get_reg_name_str(i), ondeEleTa->registradores[i]);
+        if (i % 4 == 3) printf("\n");
+    }
+    printf("\n");
+}
 
 InstrucaoDecodada decodificador(uint16_t instrucao) {
     InstrucaoDecodada decodificacao;
@@ -116,7 +119,7 @@ void handle_syscall(AondeProgramCounterEsta * estado_pc, uint16_t *memoria) {
         case 5:
             {
                 uint16_t endereco = estado_pc->registradores[1];
-                free((void*)endereco);
+                free((uint16_t*)endereco);
                 printf("Desalocação de memória simulada no endereço: %d\n", endereco);
             }
         default:
@@ -211,20 +214,7 @@ int main(const int argc, char **argv) {
         exit(1);
     }
 
-    const uint32_t tamanho_da_memoria = 0x0000FFF;
-    uint16_t *memoria = malloc(tamanho_da_memoria);
-    // tava dando um warning na minha ide
-    if (memoria == NULL) {
-        printf("memory allocation failed\n");
-        exit(1);
-    }
-
-    load_binary_to_memory(argv[1], memoria, tamanho_da_memoria);
-
-    //for(int i = 0; i < tamanho_da_memoria; i++) {
-        //printf("memoria[%d] = ", i);
-        //printzaoDebug(memoria[i]);
-    //}
+    load_binary_to_memory(argv[1], memoria, sizeof(memoria));
 
     // podia bem começar no 40 pois é mais ou menos aonde começam as instruções do assembly de verdade (jump 40
     // na primeira instrução 0x0001)
@@ -242,14 +232,8 @@ int main(const int argc, char **argv) {
 
         onde_pc_ta.pc++;
 
-        // perto de onde o programa começa a colocar só instruções com 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 (eu acho)
-        if (instrucao == 0x029A) {
-            break;
-        }
-
         getchar();
     }
 
-    free(memoria);
     return 0;
 }
