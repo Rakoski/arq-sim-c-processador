@@ -105,31 +105,23 @@ void handle_syscall(AondeProgramCounterEsta * estado_pc, uint16_t *memoria) {
         case 3: // imprimir inteiro
             printf("%d", estado_pc->registradores[1]);
             break;
-        case 4: // alocar memoria
+        case 4: // alocar memoria (malloc)
             {
                 uint16_t tamanho = estado_pc->registradores[1];
-                uint16_t *novo_espaco = calloc(tamanho, sizeof(uint16_t));
-                if (!novo_espaco) {
-                    printf("Falha na alocação de memória\n");
-                    estado_pc->registradores[1] = 0; //indicação de falha
-                } else {
-                    // armazena no novo espaço alocado
-                    // se o endereco é 32 bits, divide em dois de 16 bits
-                    uintptr_t endereco = (uintptr_t)novo_espaco;
-                    estado_pc->registradores[1] = (uint16_t)(endereco & 0xFFFF);
-                    estado_pc->registradores[2] = (uint16_t)((endereco >> 16) & 0xFFFF);
-                    printf("Memória alocada: %d bytes no endereço %p\n", tamanho * sizeof(uint16_t), novo_espaco);
-                }
-                break;
+                // Aqui você precisaria implementar a alocação de memória
+                // Por exemplo:
+                // void* novo_espaco = malloc(tamanho);
+                // estado_pc->registradores[1] = (uint16_t)((uintptr_t)novo_espaco & 0xFFFF);
+                // estado_pc->registradores[2] = (uint16_t)(((uintptr_t)novo_espaco >> 16) & 0xFFFF);
+                printf("Alocação de memória simulada: %d bytes\n", tamanho);
             }
-        case 5: // desalocar memória
+            break;
+        case 5: // desalocar memória (free)
             {
-                //reconstroi o endereco de 32 bits a partir dos registradores
-                uintptr_t endereco = ((uintptr_t)estado_pc->registradores[2] << 16) | estado_pc->registradores[1];
-                uint16_t *ptr_pra_liberar = (uint16_t *)endereco;
-                free(ptr_pra_liberar);
-                printf("Memória desalocada no endereço %p\n", ptr_pra_liberar);
-                break;
+                uint16_t endereco = estado_pc->registradores[1];
+                // precisa implementar desalocação de memória
+                // ex.: free((void*)endereco);
+                printf("Desalocação de memória simulada no endereço: %d\n", endereco);
             }
         default:
             printf("Syscall não reconhecido\n");
