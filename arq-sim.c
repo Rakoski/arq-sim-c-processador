@@ -89,39 +89,101 @@ InstrucaoDecodada decodificador(uint16_t instrucao) {
     return decodificacao;
 }
 
+// rastreia blocos de memória alocados
+typedef struct MemoryBlock {
+    uint16_t endereco_inicio;
+    uint16_t tamanho;
+    struct MemoryBlock* next;
+} MemoryBlock;
+
+MemoryBlock* lista_memoria = NULL;
+
+// alocacao de memoria
+uint16_t alocar_memoria(uint16_t tamanho_t) {
+    // simula endereco de inicio para a memoria alocada
+    static uint16_t proximo_endereco = 0x1000;
+
+    MemoryBlock* novo_bloco = malloc(sizeof(MemoryBlock));
+    if (!novo_bloco) {
+        return 0; // falha de alocação
+    }
+
+    novo_bloco->endereco_inicio = proximo_endereco;
+    novo_bloco->tamanho = tamanho_t;
+    novo_bloco->next = lista_memoria;
+    lista_memoria = novo_bloco;
+
+    proximo_endereco += tamanho_t;
+    return novo_bloco->endereco_inicio;
+}
+
+// desalocar memoria
+int desalocar_memoria(uint16_t endereco) {
+    MemoryBlock* current = lista_memoria;
+    MemoryBlock* prev = NULL;
+
+    while (current) {
+        if (current->endereco_inicio == endereco) {
+            if (prev) {
+                prev->next = current->next;
+            } else {
+                lista_memoria = current->next;
+            }
+            free(current);
+            return 1; // sucesso
+        }
+
+        prev = current;
+        current = current->next;
+    }
+
+    return 0; // caso o endereço não seja encontrado
+}
+
 void handle_syscall(AondeProgramCounterEsta * estado_pc, uint16_t *memoria) {
-    switch (estado_pc->registradores[0]) {
-        case 0:
+    switch (estado_pc->registradores[0]) { // assuma que r0 contém o código do syscall
+        case 0: // imprime o inteiro
+            printf("Programa encerrado. \n");
             exit(0);
-        case 1:
+        case 1: // imprime uma string
             {
-                uint16_t endereco = estado_pc->registradores[1];
+                uint16_t endereco = estado_pc->registradores[1]; // assume que o endereço da string está em r1
                 while (memoria[endereco] != 0) {
-                    printf("\n %c \n", (char)memoria[endereco]);
+                    printf("%c", (char)memoria[endereco]);
                     endereco++;
                 }
             }
             break;
-        case 2:
+        case 2: // imprimir nova linha
             printf("\n");
             break;
-        case 3:
+        case 3: // imprimir inteiro
             printf("%d", estado_pc->registradores[1]);
             break;
-        case 4:
+        case 4: // alocar memoria (malloc)
             {
                 uint16_t tamanho = estado_pc->registradores[1];
-                void* novo_espaco = malloc(tamanho);
-                estado_pc->registradores[1] = (uint16_t)((uintptr_t)novo_espaco & 0xFFFF);
-                estado_pc->registradores[2] = (uint16_t)(((uintptr_t)novo_espaco >> 16) & 0xFFFF);
-                printf("Alocação de memória simulada: %d bytes\n", tamanho);
+                uint16_t endereco_alocado = alocar_memoria(tamanho);
+                if (endereco_alocado) {
+                    estado_pc->registradores[1] = endereco_alocado;
+                    printf("Memória alocada: %d bytes no endereço 0x%04X\n", tamanho, endereco_alocado);
+                } else {
+                    estado_pc->registradores[1] = 0;
+                    printf("Falha na alocação de memória\n");
+                }
+                break;
             }
-            break;
-        case 5:
+        case 5: // desalocar memória (free)
             {
                 uint16_t endereco = estado_pc->registradores[1];
-                free((uint16_t*)endereco);
-                printf("Desalocação de memória simulada no endereço: %d\n", endereco);
+                int resultado = desalocar_memoria(endereco);
+                if (resultado) {
+                    printf("Memória desalocada no endereço 0x%04X\n", endereco);
+                } else {
+                    printf("Falha na desalocação: endereço 0x%04X não encontrado\n", endereco);
+                }
+                estado_pc->registradores[1] = resultado;
+                break;
             }
         default:
             printf("Syscall não reconhecido\n");
