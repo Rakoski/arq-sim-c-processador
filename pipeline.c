@@ -99,6 +99,7 @@ void decodifica(EstagioDaPipe *estado_da_pipeline) {
         decodifica->reg_dest = extract_bits(instrucao, 6, 3);
         decodifica->reg1 = extract_bits(instrucao, 3, 3);
         decodifica->reg2 = extract_bits(instrucao, 0, 3);
+        decodifica->imediato = 0;
 
         printf("tipo: R ");
         printf("opcode: ", decodifica->opcode);
@@ -109,6 +110,9 @@ void decodifica(EstagioDaPipe *estado_da_pipeline) {
         decodifica->opcode = extract_bits(instrucao, 13, 2);
         decodifica->reg_dest = extract_bits(instrucao, 10, 3);
         decodifica->imediato = extract_bits(instrucao, 0, 10);
+        decodifica->reg1 = 0;
+        decodifica->reg2 = 0;
+
         printf("tipo: I ");
         printf("opcode: ", decodifica->opcode);
         printf("reg_dest: %d\n", decodifica->reg_dest);
@@ -130,6 +134,18 @@ int main(const int argc, char **argv) {
         decodifica(&estado_da_pipeline);
         busca(&estado_da_pipeline, memoria);
         print_pc(&estado_da_pipeline.busca, &estado_da_pipeline);
+        decodifica(&estado_da_pipeline);
+
+        //impressões de depuracao
+        printf("Instrução: 0x%04X\n", estado_da_pipeline.busca.instrucao);
+        printf("Tipo: %c\n", estado_da_pipeline.decodifica.tipo);
+        printf("Opcode: %d\n", estado_da_pipeline.decodifica.opcode);
+        printf("Reg Dest: %d\n Reg1: %d\n Reg2: %d\n Imediato: %d\n",
+               estado_da_pipeline.decodifica.reg_dest,
+               estado_da_pipeline.decodifica.reg1,
+               estado_da_pipeline.decodifica.reg2,
+               estado_da_pipeline.decodifica.imediato);
+
         getchar();
     }
 
