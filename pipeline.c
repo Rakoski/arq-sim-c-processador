@@ -37,7 +37,7 @@ typedef struct {
     Executa executa;
     Writeback writeback;
     uint16_t registradores[8];
-} EstadoDaPipeline;
+} EstagioDaPipe;
 
 typedef enum {
     add = 0, sub = 1, mul = 2, div2 = 3, cmp_equal = 4, cmp_neq = 5,
@@ -59,11 +59,11 @@ const char* nomes_do_opcode_i[] = {
         [jump] = "jump", [jump_cond] = "jump_cond", [mov] = "mov"
 };
 
-void print_pc(const Busca *ondeEleTa, const EstadoDaPipeline *estado_da_pipeline) {
+void print_pc(const Busca *ondeEleTa, const EstagioDaPipe *estado_da_pipeline) {
     printf("onde o processador ta: %p \n", ondeEleTa);
-    printf("PC: %d\n", ondeEleTa->pc);
+    printf("PC: %d \n", ondeEleTa->pc);
     for (int i = 0; i < 8; i++) {
-        printf("%s: %d ", get_reg_name_str(i), estado_da_pipeline->registradores[i]);
+        printf("%s: %d  ", get_reg_name_str(i), estado_da_pipeline->registradores[i]);
         if (i % 4 == 3) printf("\n");
     }
     printf("\n");
@@ -84,9 +84,36 @@ uint16_t ULA(uint16_t reg1, uint16_t reg2, uint16_t opcode ) {
     }
 }
 
-void busca(EstadoDaPipeline *estado_da_pipeline, const uint16_t *memoria) {
+void busca(EstagioDaPipe *estado_da_pipeline, const uint16_t *memoria) {
     estado_da_pipeline->busca.instrucao = memoria[estado_da_pipeline->busca.pc];
     estado_da_pipeline->busca.pc++;
+}
+
+void decodifica(EstagioDaPipe *estado_da_pipeline) {
+    uint16_t instrucao = estado_da_pipeline->busca.instrucao;
+    Decodifica *decodifica = &estado_da_pipeline->decodifica;
+
+    decodifica->tipo = extract_bits(instrucao, 15, 1) ? 'I' : 'R';
+    if (decodifica->tipo == 'R') {
+        decodifica->opcode = extract_bits(instrucao, 9, 6);
+        decodifica->reg_dest = extract_bits(instrucao, 6, 3);
+        decodifica->reg1 = extract_bits(instrucao, 3, 3);
+        decodifica->reg2 = extract_bits(instrucao, 0, 3);
+
+        printf("tipo: R ");
+        printf("opcode: ", decodifica->opcode);
+        printf("reg_dest: %d\n", decodifica->reg_dest);
+        printf("reg1: %d\n", decodifica->reg1);
+        printf("reg2: %d\n", decodifica->reg2);
+    } else {
+        decodifica->opcode = extract_bits(instrucao, 13, 2);
+        decodifica->reg_dest = extract_bits(instrucao, 10, 3);
+        decodifica->imediato = extract_bits(instrucao, 0, 10);
+        printf("tipo: I ");
+        printf("opcode: ", decodifica->opcode);
+        printf("reg_dest: %d\n", decodifica->reg_dest);
+        printf("imediato: %d\n", decodifica->imediato);
+    }
 }
 
 int main(const int argc, char **argv) {
@@ -97,10 +124,12 @@ int main(const int argc, char **argv) {
 
     load_binary_to_memory(argv[1], memoria, sizeof(memoria));
 
-    EstadoDaPipeline estado_da_pipeline = {0};
+    EstagioDaPipe estado_da_pipeline = {0};
 
     while (1) {
+        decodifica(&estado_da_pipeline);
         busca(&estado_da_pipeline, memoria);
+        print_pc(&estado_da_pipeline.busca, &estado_da_pipeline);
         getchar();
     }
 
