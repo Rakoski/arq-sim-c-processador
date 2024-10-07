@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "lib.h"
 
 #define MEMORY_SIZE 0X0000FF
+#include "preditor.h"
 uint16_t memoria[MEMORY_SIZE];
 
 typedef struct {
@@ -36,12 +38,16 @@ typedef struct {
     Decodifica decodifica;
     Executa executa;
     Writeback writeback;
+    uint16_t pc;
     uint16_t registradores[8];
+    PreditorDoDesvio previsao;
+    struct {
+        uint16_t busca;
+        uint16_t decodifica;
+        uint16_t executa;
+        uint16_t writeback;
+    } mini_pcs;
 } EstagioDaPipe;
-
-typedef struct {
-    int previsor // -1 -> não pula, 0
-} Previsao;
 
 typedef enum {
     add = 0, sub = 1, mul = 2, div2 = 3, cmp_equal = 4, cmp_neq = 5,
@@ -63,11 +69,25 @@ const char* nomes_do_opcode_i[] = {
         [jump] = "jump", [jump_cond] = "jump_cond", [mov] = "mov"
 };
 
-void print_pc(const Busca *ondeEleTa, const EstagioDaPipe *estado_da_pipeline) {
-    printf("onde o processador ta: %p \n", ondeEleTa);
-    printf("PC: %d \n", ondeEleTa->pc - 1);
+void atualiza_mini_pcs(EstagioDaPipe *estado) {
+    estado->mini_pcs.writeback = estado->mini_pcs.executa;
+    estado->mini_pcs.executa = estado->mini_pcs.decodifica;
+    estado->mini_pcs.decodifica = estado->mini_pcs.busca;
+    estado->mini_pcs.busca = estado->busca.pc;
+}
+
+void print_mini_pcs(const EstagioDaPipe *estado) {
+    printf("Mini-PCs:\n");
+    printf("  Busca: %d\n", estado->mini_pcs.busca);
+    printf("  Decodifica: %d\n", estado->mini_pcs.decodifica);
+    printf("  Executa: %d\n", estado->mini_pcs.executa);
+    printf("  Writeback: %d\n", estado->mini_pcs.writeback);
+}
+
+void print_pc(const EstagioDaPipe *estado) {
+    printf("PC: %d\n", estado->busca.pc - 1);
     for (int i = 0; i < 8; i++) {
-        printf("%s: %d  ", get_reg_name_str(i), estado_da_pipeline->registradores[i]);
+        printf("%s: %d ", get_reg_name_str(i), estado->registradores[i]);
         if (i % 4 == 3) printf("\n");
     }
     printf("\n");
@@ -88,9 +108,11 @@ uint16_t ULA(uint16_t reg1, uint16_t reg2, uint16_t opcode ) {
     }
 }
 
-void busca(EstagioDaPipe *estado_da_pipeline, const uint16_t *memoria) {
-    estado_da_pipeline->busca.instrucao = memoria[estado_da_pipeline->busca.pc];
-    estado_da_pipeline->busca.pc++;
+void busca(EstagioDaPipe *estado, const uint16_t *memoria) {
+    printf("Buscando instrução no endereço %d\n", estado->pc);
+    estado->busca.instrucao = memoria[estado->pc];
+    estado->mini_pcs.busca = estado->pc;
+    estado->pc++;
 }
 
 void decodifica(EstagioDaPipe *estado_da_pipeline) {
@@ -132,6 +154,47 @@ void decodifica(EstagioDaPipe *estado_da_pipeline) {
     }
 }
 
+void executa(EstagioDaPipe *estado_da_pipeline) {
+    Decodifica *dec = &estado_da_pipeline->decodifica;
+    Executa *exe = &estado_da_pipeline->executa;
+
+    if (dec->tipo == 'R') {
+        switch (dec->opcode) {
+            case add:
+            case sub:
+            case mul:
+            case div2:
+                exe->resultado = ULA(estado_da_pipeline->registradores[dec->reg1],
+                                     estado_da_pipeline->registradores[dec->reg2],
+                                     dec->opcode);
+                exe->reg_dest = dec->reg_dest;
+                break;
+
+        }
+    } else if (dec->tipo == 'I') {
+        switch (dec->opcode) {
+            case mov:
+                exe->resultado = dec->imediato;
+                exe->reg_dest = dec->reg_dest;
+                break;
+        }
+    }
+}
+
+void writeback(EstagioDaPipe *estado) {
+    Executa *exe = &estado->executa;
+    Writeback *wb = &estado->writeback;
+
+    wb->reg_dest = exe->reg_dest;
+    wb->resultado = exe->resultado;
+    estado->registradores[wb->reg_dest] = wb->resultado;
+}
+
+void inicializa_pipeline(EstagioDaPipe *estado) {
+    memset(estado, 0, sizeof(EstagioDaPipe));
+    estado->pc = 0;
+}
+
 int main(const int argc, char **argv) {
     if (argc != 2) {
         printf("usage: %s [bin_name]\n", argv[0]);
@@ -140,23 +203,38 @@ int main(const int argc, char **argv) {
 
     load_binary_to_memory(argv[1], memoria, sizeof(memoria));
 
-    EstagioDaPipe estado_da_pipeline = {0};
+    EstagioDaPipe estado = {0};
+    PreditorDoDesvio preditor;
+    inicializa_preditor(&preditor);
+
+    estado.busca.pc = 0;
 
     while (1) {
-        decodifica(&estado_da_pipeline);
-        busca(&estado_da_pipeline, memoria);
-        print_pc(&estado_da_pipeline.busca, &estado_da_pipeline);
-        decodifica(&estado_da_pipeline);
+        atualiza_mini_pcs(&estado);
 
-        //impressões de depuracao
-        printf("Reg Dest: %d\nReg1: %d\nReg2: %d\nImediato: %d\n",
-               estado_da_pipeline.decodifica.reg_dest,
-               estado_da_pipeline.decodifica.reg1,
-               estado_da_pipeline.decodifica.reg2,
-               estado_da_pipeline.decodifica.imediato);
+        writeback(&estado);
+        executa(&estado);
+        decodifica(&estado);
+
+        int previsao = preve_desvio(&preditor, estado.busca.pc);
+        if (previsao) {
+            estado.busca.pc = preditor.tabela[estado.busca.pc % BHT_SIZE].alvo;
+        }
+        busca(&estado, memoria);
+
+        if (estado.decodifica.tipo == 'I' &&
+            (estado.decodifica.opcode == jump || estado.decodifica.opcode == jump_cond)) {
+            int tomado = (estado.decodifica.opcode == jump) ||
+                         (estado.decodifica.opcode == jump_cond &&
+                          estado.registradores[estado.decodifica.reg_dest] != 0);
+            atualiza_preditor(&preditor, estado.busca.pc - 1, tomado,
+                              estado.decodifica.imediato);
+        }
+
+        print_pc(&estado);
+        print_mini_pcs(&estado);
 
         getchar();
     }
-
     return 0;
 }
