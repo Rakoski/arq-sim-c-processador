@@ -140,10 +140,17 @@ int desalocar_memoria(uint16_t endereco) {
     return 0; // caso o endereço não seja encontrado
 }
 
+void printfinalresult(uint16_t memoria_pra_print[]) {
+    for (int i = 0; i < 100; i++) {
+        printf("%i ", (memoria_pra_print[i]));
+    }
+}
+
 void handle_syscall(AondeProgramCounterEsta * estado_pc, uint16_t *memoria) {
     switch (estado_pc->registradores[0]) { // assuma que r0 contém o código do syscall
         case 0: // imprime o inteiro
             printf("Programa encerrado. \n");
+            printfinalresult(memoria);
             exit(0);
         case 1: // imprime uma string
             {
@@ -215,15 +222,15 @@ void banco_registradores(AondeProgramCounterEsta *estado_pc, const InstrucaoDeco
     const uint16_t imediato = decodada.imediato;
 
     if (tipo == 'R') {
-        switch(opcode) {
+        switch (opcode) {
             case add:
             case sub:
             case mul:
             case div2:
                 estado_pc->registradores[reg_dest] = ULA(
-                estado_pc->registradores[reg1],
-                estado_pc->registradores[reg2],
-                opcode
+                        estado_pc->registradores[reg1],
+                        estado_pc->registradores[reg2],
+                        opcode
                 );
                 break;
             case cmp_equal:
@@ -254,12 +261,12 @@ void banco_registradores(AondeProgramCounterEsta *estado_pc, const InstrucaoDeco
                 break;
         }
     } else {
-        switch(opcode) {
+        switch (opcode) {
             case jump:
-                estado_pc->pc = imediato -1;
+                estado_pc->pc = imediato - 1;
             case jump_cond:
                 if (estado_pc->registradores[reg_dest] != 0) {
-                    estado_pc->pc = imediato -1;
+                    estado_pc->pc = imediato - 1;
                 }
                 break;
             case mov:
@@ -269,6 +276,7 @@ void banco_registradores(AondeProgramCounterEsta *estado_pc, const InstrucaoDeco
                 break;
         }
     }
+
 }
 
 int main(const int argc, char **argv) {
@@ -295,6 +303,6 @@ int main(const int argc, char **argv) {
 
         getchar();
     }
-
+    printfinalresult(memoria);
     return 0;
 }
