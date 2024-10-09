@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define BHT_SIZE 256
+#define BHT_SIZE 32
 
 typedef struct {
     int contador; // (0, 1, 2, 3)
