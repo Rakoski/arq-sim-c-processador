@@ -85,7 +85,7 @@ void print_mini_pcs(const EstagioDaPipe *estado) {
 }
 
 void print_pc(const EstagioDaPipe *estado) {
-    printf("PC: %d\n", estado->busca.pc);
+//    printf("PC: %d\n", estado->busca.pc);
     for (int i = 0; i < 8; i++) {
         printf("%s: %d ", get_reg_name_str(i), estado->registradores[i]);
         if (i % 4 == 3) printf("\n");
@@ -109,7 +109,7 @@ uint16_t ULA(uint16_t reg1, uint16_t reg2, uint16_t opcode ) {
 }
 
 void busca(EstagioDaPipe *estado, const uint16_t *memoria) {
-    printf("Buscando instrução no endereço %d\n", estado->pc);
+    printf("PC: %d\n", estado->pc);
     estado->busca.instrucao = memoria[estado->pc];
     estado->mini_pcs.busca = estado->pc;
     estado->pc++;
@@ -118,8 +118,6 @@ void busca(EstagioDaPipe *estado, const uint16_t *memoria) {
 void decodifica(EstagioDaPipe *estado_da_pipeline) {
     uint16_t instrucao = estado_da_pipeline->busca.instrucao;
     Decodifica *decodifica = &estado_da_pipeline->decodifica;
-
-    printf("Instrução: 0x%04X\n", estado_da_pipeline->busca.instrucao);
 
     decodifica->tipo = extract_bits(instrucao, 15, 1) ? 'I' : 'R';
     if (decodifica->tipo == 'R') {

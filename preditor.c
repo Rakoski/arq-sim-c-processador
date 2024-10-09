@@ -7,20 +7,22 @@ void inicializa_preditor(PreditorDoDesvio *preditor) {
     }
 }
 
-int preve_desvio(PreditorDoDesvio *preditor, uint16_t pc) {
-    int indice = pc % BHT_SIZE;
-    return preditor->tabela[indice].contador > 0;
-}
 
 void atualiza_preditor(PreditorDoDesvio *preditor, uint16_t pc, int tomado, uint16_t alvo) {
-    int indice = pc % BHT_SIZE;
-    EntradaBHT *entrada = &preditor->tabela[indice];
+    uint16_t index = pc;
 
-    if (tomado) {
-        if (entrada->contador < 2) entrada->contador++;
-    } else {
-        if (entrada->contador > -1) entrada->contador--;
+    if (index >= BHT_SIZE) {
+        index = index - BHT_SIZE;
     }
 
-    entrada->alvo = alvo;
+    preditor[index].tabela->alvo = alvo; // aonde q a decisão vai afetar
+    if (tomado) {
+        if (preditor[index].tabela->contador < 3) {
+            preditor[index].tabela->contador++;
+        }
+    } else {
+        if (preditor[index].tabela->contador > 0) {
+            preditor[index].tabela->contador--;
+        }
+    }
 }
