@@ -85,7 +85,7 @@ void print_mini_pcs(const EstagioDaPipe *estado) {
 }
 
 void print_pc(const EstagioDaPipe *estado) {
-    printf("PC: %d\n", estado->busca.pc - 1);
+    printf("PC: %d\n", estado->busca.pc);
     for (int i = 0; i < 8; i++) {
         printf("%s: %d ", get_reg_name_str(i), estado->registradores[i]);
         if (i % 4 == 3) printf("\n");
@@ -130,13 +130,14 @@ void decodifica(EstagioDaPipe *estado_da_pipeline) {
         decodifica->imediato = 0;
 
         printf("Tipo: R\n");
-        printf("Opcode: %s\n", nomes_do_opcode_r[estado_da_pipeline->decodifica.opcode]);
+        printf("Opcode: %s ", nomes_do_opcode_r[estado_da_pipeline->decodifica.opcode]);
+        printf("%d: \n", estado_da_pipeline->decodifica.opcode);
 
 //        printf("tipo: R ");
 //        printf("opcode: ", decodifica->opcode);
-//        printf("reg_dest: %d\n", decodifica->reg_dest);
-//        printf("reg1: %d\n", decodifica->reg1);
-//        printf("reg2: %d\n", decodifica->reg2);
+        printf("reg_dest: r%d\n", decodifica->reg_dest);
+        printf("reg1: r%d\n", decodifica->reg1);
+        printf("reg2: r%d\n", decodifica->reg2);
     } else {
         decodifica->opcode = extract_bits(instrucao, 13, 2);
         decodifica->reg_dest = extract_bits(instrucao, 10, 3);
@@ -145,12 +146,13 @@ void decodifica(EstagioDaPipe *estado_da_pipeline) {
         decodifica->reg2 = 0;
 
         printf("Tipo: I\n");
-        printf("Opcode: %s\n", nomes_do_opcode_i[estado_da_pipeline->decodifica.opcode]);
+        printf("Opcode: %s ", nomes_do_opcode_i[estado_da_pipeline->decodifica.opcode]);
+        printf("%d: \n", estado_da_pipeline->decodifica.opcode);
 
 //        printf("tipo: I ");
 //        printf("opcode: ", decodifica->opcode);
-//        printf("reg_dest: %d\n", decodifica->reg_dest);
-//        printf("imediato: %d\n", decodifica->imediato);
+        printf("reg_dest: r%d\n", decodifica->reg_dest);
+        printf("imediato: %d\n", decodifica->imediato);
     }
 }
 
