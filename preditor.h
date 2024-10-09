@@ -6,7 +6,7 @@
 #define BHT_SIZE 256
 
 typedef struct {
-    int contador; // (-1, 0, 1, 2)
+    int contador; // (0, 1, 2, 3)
     uint16_t alvo;
 } EntradaBHT;
 
