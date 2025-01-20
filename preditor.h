@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 
-#define BHT_SIZE 256
+#define BHT_SIZE 32
 
 typedef struct {
-    int contador; // (-1, 0, 1, 2)
+    uint8_t contador; // (0, 1, 2, 3) vulgo 2 bit
     uint16_t alvo;
 } EntradaBHT;
 
